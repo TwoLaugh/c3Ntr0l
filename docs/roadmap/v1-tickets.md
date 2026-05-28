@@ -1,5 +1,7 @@
 # V1 Implementation Tickets
 
+Note: this original ticket set reflects the first domain/task/routine-centered architecture. The newer context-led roadmap in `docs/roadmap/context-led-v1-tickets.md` should be treated as the current direction for the next major implementation pass.
+
 ## Estimation Scale
 
 - XS: half day or less
