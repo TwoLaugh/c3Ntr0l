@@ -7,10 +7,11 @@ from sqlalchemy.orm import Session
 
 from app.models.daily_plan import DailyPlan, DailyPlanItem
 from app.models.daily_review import DailyReview
-from app.models.enums import PlanItemStatus, TaskStatus
+from app.models.enums import PlanItemStatus, SourceType, TaskStatus
 from app.models.task import Task, TaskCompletionEvent
-from app.models.user import LearnedCapabilityProfile
-from app.schemas.review import DailyReviewPromptItem, DailyReviewSubmit
+from app.models.user import LearnedCapabilityProfile, User
+from app.schemas.review import DailyReviewPromptItem, DailyReviewSubmit, ReviewInterpretation
+from app.services.ai_actions import log_action
 
 
 def build_daily_review_prompts(db: Session, *, user_id: UUID, review_date: date) -> list[DailyReviewPromptItem]:
@@ -77,7 +78,15 @@ def _importance_score(db: Session, *, user_id: UUID, item: DailyPlanItem, review
     return score
 
 
-def submit_daily_review(db: Session, *, user_id: UUID, review_date: date, payload: DailyReviewSubmit) -> DailyReview:
+def submit_daily_review(
+    db: Session,
+    *,
+    user: User,
+    review_date: date,
+    payload: DailyReviewSubmit,
+    interpretation: ReviewInterpretation | None = None,
+) -> DailyReview:
+    user_id = user.id
     prompts = [prompt.model_dump(mode="json") for prompt in build_daily_review_prompts(db, user_id=user_id, review_date=review_date)]
     review = db.scalar(select(DailyReview).where(DailyReview.user_id == user_id, DailyReview.review_date == review_date))
     if review is None:
@@ -101,6 +110,10 @@ def submit_daily_review(db: Session, *, user_id: UUID, review_date: date, payloa
             task.do_window_end = start + timedelta(hours=2)
         if adjustment.note:
             task.notes = f"{task.notes}\n{adjustment.note}" if task.notes else adjustment.note
+
+    if interpretation is not None:
+        review.ai_summary = interpretation.summary
+        _apply_review_interpretation(db, user=user, interpretation=interpretation)
 
     _update_learned_capability(db, user_id=user_id, review_date=review_date)
     db.flush()
@@ -137,3 +150,55 @@ def _update_learned_capability(db: Session, *, user_id: UUID, review_date: date)
     previous = Decimal(learned.plan_completion_rate_14d or 0)
     learned.plan_completion_rate_14d = (previous * Decimal("0.8")) + (observed_rate * Decimal("0.2"))
     learned.confidence_score = min(Decimal("1.0"), Decimal(learned.confidence_score or 0) + Decimal("0.05"))
+
+
+def _apply_review_interpretation(db: Session, *, user: User, interpretation: ReviewInterpretation) -> None:
+    for adjustment in interpretation.adjustments:
+        task = db.get(Task, adjustment.task_id) if adjustment.task_id else None
+        if task is not None and task.user_id != user.id:
+            continue
+
+        if adjustment.action in {"defer_task", "add_note"} and task is not None:
+            before = {"notes": task.notes, "do_window_start": task.do_window_start, "do_window_end": task.do_window_end}
+            if adjustment.target_date:
+                start = datetime.combine(adjustment.target_date, time(hour=9), tzinfo=UTC)
+                task.do_window_start = start
+                task.do_window_end = start + timedelta(hours=2)
+            if adjustment.note:
+                task.notes = f"{task.notes}\n{adjustment.note}" if task.notes else adjustment.note
+            log_action(
+                db,
+                user_id=user.id,
+                source_type=SourceType.ai,
+                action_type=adjustment.action,
+                target_type="task",
+                target_id=task.id,
+                before_state=before,
+                after_state={
+                    "notes": task.notes,
+                    "do_window_start": task.do_window_start,
+                    "do_window_end": task.do_window_end,
+                },
+                reason="Applied from AI review interpretation",
+            )
+        elif adjustment.action == "split_follow_up" and adjustment.title:
+            task = Task(
+                user_id=user.id,
+                title=adjustment.title,
+                notes=adjustment.note,
+                do_window_start=datetime.combine(adjustment.target_date, time(hour=9), tzinfo=UTC)
+                if adjustment.target_date
+                else None,
+            )
+            db.add(task)
+            db.flush()
+            log_action(
+                db,
+                user_id=user.id,
+                source_type=SourceType.ai,
+                action_type="split_follow_up",
+                target_type="task",
+                target_id=task.id,
+                after_state={"id": task.id, "title": task.title},
+                reason="Created from AI review interpretation",
+            )

@@ -6,11 +6,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.config import Settings, get_settings
 from app.core.database import get_db
 from app.models.daily_review import DailyReview
 from app.models.user import User
 from app.schemas.review import DailyReviewPromptRead, DailyReviewRead, DailyReviewSubmit
 from app.services.reviews import build_daily_review_prompts, submit_daily_review
+from app.services.openai_review import interpret_review_with_openai
 
 router = APIRouter()
 
@@ -35,8 +37,18 @@ def submit_review(
     payload: DailyReviewSubmit,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> DailyReview:
-    review = submit_daily_review(db, user_id=current_user.id, review_date=review_date, payload=payload)
+    interpretation = None
+    if settings.openai_api_key and payload.responses:
+        interpretation = interpret_review_with_openai(
+            db,
+            settings=settings,
+            user=current_user,
+            review_date=review_date.isoformat(),
+            responses=payload.responses,
+        )
+    review = submit_daily_review(db, user=current_user, review_date=review_date, payload=payload, interpretation=interpretation)
     db.commit()
     db.refresh(review)
     return review

@@ -50,3 +50,16 @@ class DailyReviewRead(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class ReviewAdjustmentIntent(BaseModel):
+    action: Literal["defer_task", "add_note", "split_follow_up", "reduce_tomorrow_load"]
+    task_id: UUID | None = None
+    title: str | None = None
+    target_date: date | None = None
+    note: str | None = None
+
+
+class ReviewInterpretation(BaseModel):
+    summary: str | None = None
+    adjustments: list[ReviewAdjustmentIntent] = []
