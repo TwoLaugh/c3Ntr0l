@@ -13,6 +13,15 @@ uv run alembic upgrade head
 uv run uvicorn app.main:app --reload
 ```
 
+From the repository root, prefer the shared command runner:
+
+```bash
+make api-install
+make db-up
+make api-migrate
+make api-dev
+```
+
 The API exposes:
 
 - `GET /health`
