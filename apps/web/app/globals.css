@@ -156,6 +156,37 @@ textarea {
   color: var(--muted);
 }
 
+.chat-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.chat-turn {
+  display: grid;
+  gap: 8px;
+}
+
+.chat-bubble {
+  max-width: 760px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  line-height: 1.4;
+}
+
+.user-bubble {
+  justify-self: end;
+  background: var(--accent);
+  color: #fff;
+}
+
+.assistant-bubble {
+  justify-self: start;
+  background: var(--panel);
+  color: var(--ink);
+}
+
 .login-screen {
   min-height: 100vh;
   display: grid;

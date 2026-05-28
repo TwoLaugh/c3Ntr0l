@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from app.models.enums import EnergyLevel, TaskPriority
 
 
-IntentType = Literal["create_task", "create_routine", "clarification"]
+IntentType = Literal["create_task", "create_routine", "clarification", "no_op"]
 
 
 class InboxIntent(BaseModel):
@@ -21,6 +21,8 @@ class InboxIntent(BaseModel):
     energy_required: EnergyLevel | None = None
     recurrence_rule: str | None = None
     clarification_question: str | None = None
+    existing_task_id: str | None = None
+    no_op_reason: str | None = None
 
 
 class InboxParseResult(BaseModel):

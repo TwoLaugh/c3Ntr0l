@@ -166,6 +166,15 @@ def _apply_ai_parse_result(
                     message=f"Created routine: {routine.title}",
                 )
             )
+        elif intent.intent_type == "no_op":
+            actions.append(
+                InboxActionRead(
+                    action_type="no_op",
+                    target_type="task" if intent.existing_task_id else None,
+                    target_id=UUID(intent.existing_task_id) if intent.existing_task_id else None,
+                    message=intent.no_op_reason or "Already covered.",
+                )
+            )
 
     message.processing_status = "processed" if actions else "unsupported"
     message.parsed_intents = parse_result.model_dump(mode="json")

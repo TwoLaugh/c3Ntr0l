@@ -82,3 +82,34 @@ def test_ai_inbox_parse_returns_clarification(
     assert response.status_code == 201
     assert response.json()["processing_status"] == "needs_clarification"
     assert response.json()["actions"][0]["action_type"] == "clarification"
+
+
+def test_ai_inbox_parse_can_avoid_duplicate_task(
+    db_client: TestClient,
+    auth_headers: dict[str, str],
+    test_settings: Settings,
+) -> None:
+    test_settings.openai_api_key = "test-openai-key"
+    existing = db_client.post("/api/v1/tasks", headers=auth_headers, json={"title": "Prepare for driving test"}).json()
+    parsed = InboxParseResult(
+        confirmation="Already covered.",
+        intents=[
+            InboxIntent(
+                intent_type="no_op",
+                existing_task_id=existing["id"],
+                no_op_reason="Already have this as an active task.",
+            )
+        ],
+    )
+
+    with patch("app.services.inbox.parse_inbox_with_openai", return_value=parsed):
+        response = db_client.post(
+            "/api/v1/inbox/messages",
+            headers=auth_headers,
+            json={"raw_text": "Need to prepare for driving test"},
+        )
+
+    assert response.status_code == 201
+    assert response.json()["processing_status"] == "processed"
+    assert response.json()["actions"][0]["action_type"] == "no_op"
+    assert response.json()["actions"][0]["target_id"] == existing["id"]
