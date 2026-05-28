@@ -28,6 +28,7 @@ target-version = "py311"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 markers = [
     "db: tests that require TEST_DATABASE_URL and a migrated Postgres database",
 ]

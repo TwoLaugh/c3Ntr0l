@@ -27,3 +27,4 @@ def test_profile_placeholder(client: TestClient) -> None:
 
     assert response.status_code == 200
     assert response.json()["profile"] is None
+
