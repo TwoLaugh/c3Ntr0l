@@ -2119,6 +2119,110 @@
         }
       }
     },
+    "/api/v1/reviews/daily/{review_date}": {
+      "post": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Submit Review",
+        "operationId": "submit_review_api_v1_reviews_daily__review_date__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "review_date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Review Date"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DailyReviewSubmit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyReviewRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Get Review",
+        "operationId": "get_review_api_v1_reviews_daily__review_date__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "review_date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Review Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyReviewRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/ai-actions": {
       "get": {
         "tags": [
@@ -2689,6 +2793,185 @@
           "quick_checks"
         ],
         "title": "DailyReviewPromptRead"
+      },
+      "DailyReviewRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "review_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Review Date"
+          },
+          "prompts": {
+            "items": {},
+            "type": "array",
+            "title": "Prompts"
+          },
+          "responses": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Responses"
+          },
+          "energy_level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EnergyLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "load_fit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Load Fit"
+          },
+          "mood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mood"
+          },
+          "ai_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Summary"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "review_date",
+          "prompts",
+          "responses",
+          "created_at"
+        ],
+        "title": "DailyReviewRead"
+      },
+      "DailyReviewSubmit": {
+        "properties": {
+          "responses": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Responses",
+            "default": {}
+          },
+          "energy_level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EnergyLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "load_fit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Load Fit"
+          },
+          "mood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mood"
+          },
+          "task_adjustments": {
+            "items": {
+              "$ref": "#/components/schemas/DailyReviewTaskAdjustment"
+            },
+            "type": "array",
+            "title": "Task Adjustments",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "DailyReviewSubmit"
+      },
+      "DailyReviewTaskAdjustment": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Task Id"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "defer",
+              "move"
+            ],
+            "title": "Action"
+          },
+          "target_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Date"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id",
+          "action"
+        ],
+        "title": "DailyReviewTaskAdjustment"
       },
       "DomainCreate": {
         "properties": {
