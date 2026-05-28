@@ -1,7 +1,7 @@
 API_DIR := apps/api
 COMPOSE := docker compose
 
-.PHONY: help api-install api-install-frozen api-lock db-up db-down db-logs api-migrate api-dev api-test api-lint api-format api-check api-openapi api-openapi-check
+.PHONY: help api-install api-install-frozen api-lock db-up db-down db-logs api-migrate api-dev api-test api-lint api-format api-check ci-api api-openapi api-openapi-check
 
 help:
 	@echo "c3Ntr0l developer commands"
@@ -18,6 +18,7 @@ help:
 	@echo "  make api-lint      Run backend lint"
 	@echo "  make api-format    Format backend code"
 	@echo "  make api-check     Run backend lint and tests"
+	@echo "  make ci-api        Run stricter API checks for CI"
 	@echo "  make api-openapi   Export FastAPI OpenAPI JSON"
 	@echo "  make api-openapi-check"
 	@echo "                      Check committed OpenAPI JSON is current"
@@ -56,6 +57,8 @@ api-format:
 	cd $(API_DIR) && uv run ruff format .
 
 api-check: api-lint api-test
+
+ci-api: api-lint api-migrate api-test
 
 api-openapi:
 	cd $(API_DIR) && uv run python scripts/export_openapi.py ../../openapi/openapi.json
