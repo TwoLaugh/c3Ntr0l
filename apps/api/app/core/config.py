@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     )
     google_client_id: Optional[str] = Field(default=None, alias="GOOGLE_CLIENT_ID")
     openai_api_key: Optional[str] = Field(default=None, alias="OPENAI_API_KEY")
+    session_secret_key: str = Field(default="local-dev-session-secret", alias="SESSION_SECRET_KEY")
+    session_token_ttl_seconds: int = Field(default=60 * 60 * 24 * 30, alias="SESSION_TOKEN_TTL_SECONDS")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

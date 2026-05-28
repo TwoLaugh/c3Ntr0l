@@ -1,0 +1,43 @@
+name: API
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: c3ntr0l
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d c3ntr0l"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/c3ntr0l
+      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/c3ntr0l
+      GOOGLE_CLIENT_ID: test-google-client-id
+      SESSION_SECRET_KEY: ci-session-secret
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+      - run: make api-install-frozen
+      - run: make api-lint
+      - run: make api-migrate
+      - run: make api-test
+      - run: make api-openapi-check
