@@ -9,8 +9,17 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.daily_plan import DailyPlan, DailyPlanItem
+from app.models.enums import CompletionEventType, PlanItemStatus, TaskStatus
+from app.models.task import Task, TaskCompletionEvent
 from app.models.user import User
-from app.schemas.today import DailyPlanItemRead, DailyPlanRead, TodayItemUpdate
+from app.schemas.today import (
+    DailyPlanItemRead,
+    DailyPlanRead,
+    TodayItemMoveAction,
+    TodayItemNoteAction,
+    TodayItemPartialAction,
+    TodayItemUpdate,
+)
 from app.services.daily_plans import get_or_create_daily_plan, regenerate_daily_plan
 
 router = APIRouter()
@@ -67,6 +76,87 @@ def update_today_item(
     return item
 
 
+@router.post("/items/{item_id}/complete", response_model=DailyPlanItemRead)
+def complete_today_item(
+    item_id: UUID,
+    payload: TodayItemNoteAction,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> DailyPlanItem:
+    item = _get_owned_item(db, current_user, item_id)
+    item.status = PlanItemStatus.completed
+    task = _get_item_task(db, item)
+    if task is not None:
+        task.status = TaskStatus.completed
+        _record_event(db, current_user, item, task, CompletionEventType.complete, payload.note)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@router.post("/items/{item_id}/partial", response_model=DailyPlanItemRead)
+def partially_complete_today_item(
+    item_id: UUID,
+    payload: TodayItemPartialAction,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> DailyPlanItem:
+    item = _get_owned_item(db, current_user, item_id)
+    item.status = PlanItemStatus.completed if payload.complete_task else PlanItemStatus.partial
+    note_parts = [part for part in [payload.amount_done, payload.note] if part]
+    task = _get_item_task(db, item)
+    if task is not None:
+        if payload.complete_task:
+            task.status = TaskStatus.completed
+        _record_event(db, current_user, item, task, CompletionEventType.partial, "\n".join(note_parts) or None)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@router.post("/items/{item_id}/skip", response_model=DailyPlanItemRead)
+def skip_today_item(
+    item_id: UUID,
+    payload: TodayItemNoteAction,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> DailyPlanItem:
+    item = _get_owned_item(db, current_user, item_id)
+    item.status = PlanItemStatus.skipped
+    task = _get_item_task(db, item)
+    if task is not None:
+        _record_event(db, current_user, item, task, CompletionEventType.skipped, payload.note)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@router.post("/items/{item_id}/move", response_model=DailyPlanItemRead)
+def move_today_item(
+    item_id: UUID,
+    payload: TodayItemMoveAction,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> DailyPlanItem:
+    item = _get_owned_item(db, current_user, item_id)
+    task = _get_item_task(db, item)
+    if payload.target_plan_date is not None:
+        target_plan = get_or_create_daily_plan(db, user_id=current_user.id, plan_date=payload.target_plan_date)
+        item.daily_plan_id = target_plan.id
+        item.position = _next_position(db, target_plan.id)
+    if payload.suggested_start is not None:
+        item.suggested_start = payload.suggested_start
+    if payload.suggested_end is not None:
+        item.suggested_end = payload.suggested_end
+    item.status = PlanItemStatus.moved
+    item.user_edited_at = datetime.now(UTC)
+    if task is not None:
+        _record_event(db, current_user, item, task, CompletionEventType.moved, payload.note)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
 def _plan_read(db: Session, plan: DailyPlan) -> DailyPlanRead:
     items = db.scalars(
         select(DailyPlanItem).where(DailyPlanItem.daily_plan_id == plan.id).order_by(DailyPlanItem.position)
@@ -81,3 +171,40 @@ def _plan_read(db: Session, plan: DailyPlan) -> DailyPlanRead:
         generated_at=plan.generated_at,
         items=list(items),
     )
+
+
+def _get_owned_item(db: Session, current_user: User, item_id: UUID) -> DailyPlanItem:
+    item = db.get(DailyPlanItem, item_id)
+    if item is None or item.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Today item not found")
+    return item
+
+
+def _get_item_task(db: Session, item: DailyPlanItem) -> Task | None:
+    if item.task_id is None:
+        return None
+    return db.get(Task, item.task_id)
+
+
+def _record_event(
+    db: Session,
+    current_user: User,
+    item: DailyPlanItem,
+    task: Task,
+    event_type: CompletionEventType,
+    note: str | None,
+) -> None:
+    db.add(
+        TaskCompletionEvent(
+            user_id=current_user.id,
+            task_id=task.id,
+            plan_item_id=item.id,
+            event_type=event_type,
+            note=note,
+        )
+    )
+
+
+def _next_position(db: Session, daily_plan_id: UUID) -> int:
+    positions = db.scalars(select(DailyPlanItem.position).where(DailyPlanItem.daily_plan_id == daily_plan_id)).all()
+    return max(positions, default=-1) + 1

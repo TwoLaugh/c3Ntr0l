@@ -53,3 +53,26 @@ class TodayItemUpdate(BaseModel):
         if self.suggested_start and self.suggested_end and self.suggested_end <= self.suggested_start:
             raise ValueError("suggested_end must be after suggested_start")
         return self
+
+
+class TodayItemNoteAction(BaseModel):
+    note: str | None = None
+
+
+class TodayItemPartialAction(BaseModel):
+    note: str | None = None
+    amount_done: str | None = None
+    complete_task: bool = False
+
+
+class TodayItemMoveAction(BaseModel):
+    target_plan_date: date | None = None
+    suggested_start: datetime | None = None
+    suggested_end: datetime | None = None
+    note: str | None = None
+
+    @model_validator(mode="after")
+    def validate_move_times(self) -> "TodayItemMoveAction":
+        if self.suggested_start and self.suggested_end and self.suggested_end <= self.suggested_start:
+            raise ValueError("suggested_end must be after suggested_start")
+        return self
