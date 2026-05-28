@@ -5,6 +5,7 @@ from app.api.v1.routes import (
     auth,
     domains,
     health,
+    inbox,
     profile,
     projects,
     reviews,
@@ -24,5 +25,6 @@ api_router.include_router(routines.router, prefix="/routines", tags=["routines"]
 api_router.include_router(today.router, prefix="/today", tags=["today"])
 api_router.include_router(weekly_planning.router, prefix="/weekly-planning", tags=["weekly-planning"])
 api_router.include_router(reviews.router, prefix="/reviews", tags=["reviews"])
+api_router.include_router(inbox.router, prefix="/inbox", tags=["inbox"])
 api_router.include_router(ai_actions.router, prefix="/ai-actions", tags=["ai-actions"])
 api_router.include_router(health.router, tags=["health"])
