@@ -9,8 +9,10 @@ from app.api.deps import get_current_user
 from app.core.config import Settings, get_settings
 from app.core.database import get_db
 from app.models.daily_review import DailyReview
+from app.models.enums import EntrySource
 from app.models.user import User
 from app.schemas.review import DailyReviewPromptRead, DailyReviewRead, DailyReviewSubmit
+from app.services.entries import create_entry, serialize_entry_payload
 from app.services.reviews import build_daily_review_prompts, submit_daily_review
 from app.services.openai_review import interpret_review_with_openai
 
@@ -49,6 +51,15 @@ def submit_review(
             responses=payload.responses,
         )
     review = submit_daily_review(db, user=current_user, review_date=review_date, payload=payload, interpretation=interpretation)
+    create_entry(
+        db,
+        user_id=current_user.id,
+        source_type=EntrySource.daily_review,
+        source_id=review.id,
+        raw_text=serialize_entry_payload(payload.model_dump(mode="json")),
+        metadata={"review_date": review_date.isoformat(), "daily_review_id": str(review.id)},
+        ai_interpretation=interpretation.model_dump(mode="json") if interpretation else None,
+    )
     db.commit()
     db.refresh(review)
     return review

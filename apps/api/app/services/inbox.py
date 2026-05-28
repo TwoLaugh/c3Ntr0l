@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
-from app.models.enums import SourceType
+from app.models.enums import EntrySource, SourceType
 from app.models.inbox_message import InboxMessage
 from app.models.routine import Routine
 from app.models.task import Task
@@ -13,6 +13,7 @@ from app.schemas.inbox import InboxActionRead
 from app.schemas.inbox_intent import InboxParseResult
 from app.services.ai_actions import log_action
 from app.services.daily_plans import regenerate_daily_plan
+from app.services.entries import create_entry
 from app.services.openai_inbox import parse_inbox_with_openai
 from app.services.routines import generate_routine_instances
 
@@ -21,6 +22,14 @@ def process_inbox_message(db: Session, *, settings: Settings, user: User, messag
     user_id = user.id
     text = message.raw_text.strip()
     actions: list[InboxActionRead] = []
+    entry = create_entry(
+        db,
+        user_id=user_id,
+        source_type=EntrySource.inbox,
+        source_id=message.id,
+        raw_text=message.raw_text,
+        metadata={"inbox_message_id": str(message.id)},
+    )
 
     if text.lower().startswith("task:"):
         title = text.split(":", 1)[1].strip()
@@ -31,7 +40,7 @@ def process_inbox_message(db: Session, *, settings: Settings, user: User, messag
             db,
             user_id=user_id,
             source_type=SourceType.user,
-            source_id=message.id,
+            source_id=entry.id,
             action_type="create_task",
             target_type="task",
             target_id=task.id,
@@ -52,7 +61,7 @@ def process_inbox_message(db: Session, *, settings: Settings, user: User, messag
             db,
             user_id=user_id,
             source_type=SourceType.user,
-            source_id=message.id,
+            source_id=entry.id,
             action_type="create_routine",
             target_type="routine",
             target_id=routine.id,
@@ -72,7 +81,13 @@ def process_inbox_message(db: Session, *, settings: Settings, user: User, messag
     else:
         if settings.openai_api_key:
             parse_result = parse_inbox_with_openai(db, settings=settings, user=user, raw_text=text)
-            actions = _apply_ai_parse_result(db, user_id=user_id, message=message, parse_result=parse_result)
+            actions = _apply_ai_parse_result(
+                db,
+                user_id=user_id,
+                message=message,
+                source_entry_id=entry.id,
+                parse_result=parse_result,
+            )
         else:
             message.processing_status = "unsupported"
             message.parsed_intents = {"command": "unsupported"}
@@ -93,6 +108,7 @@ def _apply_ai_parse_result(
     *,
     user_id: UUID,
     message: InboxMessage,
+    source_entry_id: UUID,
     parse_result: InboxParseResult,
 ) -> list[InboxActionRead]:
     if parse_result.clarification_question:
@@ -121,7 +137,7 @@ def _apply_ai_parse_result(
                 db,
                 user_id=user_id,
                 source_type=SourceType.ai,
-                source_id=message.id,
+                source_id=source_entry_id,
                 action_type="create_task",
                 target_type="task",
                 target_id=task.id,
@@ -151,7 +167,7 @@ def _apply_ai_parse_result(
                 db,
                 user_id=user_id,
                 source_type=SourceType.ai,
-                source_id=message.id,
+                source_id=source_entry_id,
                 action_type="create_routine",
                 target_type="routine",
                 target_id=routine.id,

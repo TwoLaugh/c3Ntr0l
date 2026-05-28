@@ -19,6 +19,8 @@ def test_inbox_task_command_creates_task_and_logs_action(db_client: TestClient, 
 
     actions = db_client.get("/api/v1/ai-actions", headers=auth_headers).json()
     assert actions[0]["action_type"] == "create_task"
+    entries = db_client.get("/api/v1/entries?source_type=inbox", headers=auth_headers).json()
+    assert entries[0]["raw_text"] == "task: Buy milk"
 
 
 def test_inbox_daily_routine_command_creates_routine(db_client: TestClient, auth_headers: dict[str, str]) -> None:

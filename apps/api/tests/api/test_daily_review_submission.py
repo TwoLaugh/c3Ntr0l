@@ -42,6 +42,9 @@ def test_daily_review_submission_persists_and_updates_learned_capability(
     fetched = db_client.get("/api/v1/reviews/daily/2026-06-01", headers=auth_headers)
     assert fetched.status_code == 200
     assert fetched.json()["load_fit"] == "right"
+    entries = db_client.get("/api/v1/entries?source_type=daily_review", headers=auth_headers).json()
+    assert entries[0]["metadata"]["review_date"] == "2026-06-01"
+    assert "fine" in entries[0]["raw_text"]
 
 
 def test_daily_review_can_defer_task_from_response(db_client: TestClient, auth_headers: dict[str, str]) -> None:
