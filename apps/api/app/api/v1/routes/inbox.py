@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.config import Settings, get_settings
 from app.core.database import get_db
 from app.models.inbox_message import InboxMessage
 from app.models.user import User
@@ -20,11 +21,12 @@ def create_message(
     payload: InboxMessageCreate,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> InboxMessageRead:
     message = InboxMessage(user_id=current_user.id, raw_text=payload.raw_text)
     db.add(message)
     db.flush()
-    actions = process_inbox_message(db, user_id=current_user.id, message=message)
+    actions = process_inbox_message(db, settings=settings, user=current_user, message=message)
     db.commit()
     db.refresh(message)
     return _message_read(message, actions)
