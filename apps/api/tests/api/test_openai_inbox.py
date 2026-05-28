@@ -35,6 +35,9 @@ def test_ai_inbox_parse_can_create_task(
     assert task["title"] == "Pressure wash paths"
     assert task["priority"] == "high"
 
+    today = db_client.get("/api/v1/today", headers=auth_headers).json()
+    assert any(item["task_id"] == task_id for item in today["items"])
+
 
 def test_ai_inbox_parse_can_create_routine(
     db_client: TestClient,
@@ -60,6 +63,9 @@ def test_ai_inbox_parse_can_create_routine(
     routine_id = response.json()["actions"][0]["target_id"]
     routine = db_client.get(f"/api/v1/routines/{routine_id}", headers=auth_headers).json()
     assert routine["title"] == "Back rehab"
+
+    today = db_client.get("/api/v1/today", headers=auth_headers).json()
+    assert any(item["title_snapshot"] == "Back rehab" and item["block_type"] == "routine" for item in today["items"])
 
 
 def test_ai_inbox_parse_returns_clarification(

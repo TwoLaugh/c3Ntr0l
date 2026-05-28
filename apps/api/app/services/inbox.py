@@ -12,7 +12,9 @@ from app.models.user import User
 from app.schemas.inbox import InboxActionRead
 from app.schemas.inbox_intent import InboxParseResult
 from app.services.ai_actions import log_action
+from app.services.daily_plans import regenerate_daily_plan
 from app.services.openai_inbox import parse_inbox_with_openai
+from app.services.routines import generate_routine_instances
 
 
 def process_inbox_message(db: Session, *, settings: Settings, user: User, message: InboxMessage) -> list[InboxActionRead]:
@@ -82,6 +84,7 @@ def process_inbox_message(db: Session, *, settings: Settings, user: User, messag
             )
 
     message.processed_at = datetime.now(UTC)
+    _refresh_today_after_inbox(db, user_id=user_id, actions=actions)
     return actions
 
 
@@ -169,3 +172,17 @@ def _apply_ai_parse_result(
     if not actions:
         actions.append(InboxActionRead(action_type="unsupported", message="I stored that, but could not apply it safely."))
     return actions
+
+
+def _refresh_today_after_inbox(db: Session, *, user_id: UUID, actions: list[InboxActionRead]) -> None:
+    if not any(action.action_type in {"create_task", "create_routine"} for action in actions):
+        return
+
+    today = datetime.now(UTC).date()
+    for action in actions:
+        if action.action_type == "create_routine" and action.target_id:
+            routine = db.get(Routine, action.target_id)
+            if routine is not None:
+                generate_routine_instances(db, user_id=user_id, routine=routine, start_date=today, end_date=today)
+
+    regenerate_daily_plan(db, user_id=user_id, plan_date=today)
