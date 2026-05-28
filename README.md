@@ -21,6 +21,13 @@ Low-level design:
 - [AI Planning LLD](docs/lld/03-ai-planning-lld.md)
 - [Build Readiness Notes](docs/lld/04-build-readiness.md)
 
+Setup and roadmap:
+
+- [Developer Setup](docs/dev-setup.md)
+- [Local Machine Checklist](docs/local-machine-checklist.md)
+- [Acceleration Sprint](docs/roadmap/acceleration-sprint.md)
+- [Deferred Local Tooling Items](docs/roadmap/deferred-local-tooling.md)
+
 ## Repository Structure
 
 ```txt
@@ -36,6 +43,7 @@ The backend is set up for Python 3.11+, FastAPI, SQLAlchemy, Alembic, and Postgr
 
 ```bash
 cp apps/api/.env.example apps/api/.env
+make api-lock
 make api-install
 make db-up
 make api-migrate
