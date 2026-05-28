@@ -9,10 +9,12 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.domain import Domain
+from app.models.enums import SourceType
 from app.models.project import Project
 from app.models.task import Task, TaskCompletionEvent
 from app.models.user import User
 from app.schemas.task import TaskCompletionEventRead, TaskCreate, TaskRead, TaskUpdate
+from app.services.ai_actions import log_action
 
 router = APIRouter()
 
@@ -113,8 +115,22 @@ def archive_task(
     db: Annotated[Session, Depends(get_db)],
 ) -> TaskRead:
     task = _get_owned_task(db, current_user, task_id)
+    before_state = _task_read(task).model_dump(mode="json", by_alias=True)
     task.status = "archived"
     task.archived_at = datetime.now(UTC)
+    after_state = _task_read(task).model_dump(mode="json", by_alias=True)
+    log_action(
+        db,
+        user_id=current_user.id,
+        source_type=SourceType.user,
+        action_type="archive_task",
+        target_type="task",
+        target_id=task.id,
+        before_state=before_state,
+        after_state=after_state,
+        reason="Task archived from API",
+        reversible=True,
+    )
     db.commit()
     db.refresh(task)
     return _task_read(task)

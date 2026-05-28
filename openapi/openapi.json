@@ -1029,6 +1029,132 @@
         }
       }
     },
+    "/api/v1/ai-actions": {
+      "get": {
+        "tags": [
+          "ai-actions"
+        ],
+        "summary": "List Ai Actions",
+        "operationId": "list_ai_actions_api_v1_ai_actions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AIActionLogRead"
+                  },
+                  "type": "array",
+                  "title": "Response List Ai Actions Api V1 Ai Actions Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/ai-actions/{action_id}": {
+      "get": {
+        "tags": [
+          "ai-actions"
+        ],
+        "summary": "Get Ai Action",
+        "operationId": "get_ai_action_api_v1_ai_actions__action_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "action_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Action Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIActionLogRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-actions/{action_id}/undo": {
+      "post": {
+        "tags": [
+          "ai-actions"
+        ],
+        "summary": "Undo Ai Action",
+        "operationId": "undo_ai_action_api_v1_ai_actions__action_id__undo_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "action_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Action Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UndoActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "tags": [
@@ -1070,6 +1196,104 @@
   },
   "components": {
     "schemas": {
+      "AIActionLogRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/SourceType"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "action_type": {
+            "type": "string",
+            "title": "Action Type"
+          },
+          "target_type": {
+            "type": "string",
+            "title": "Target Type"
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          },
+          "before_state": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before State"
+          },
+          "after_state": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After State"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "reversible": {
+            "type": "boolean",
+            "title": "Reversible"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_type",
+          "action_type",
+          "target_type",
+          "reversible",
+          "created_at"
+        ],
+        "title": "AIActionLogRead"
+      },
       "AuthResponse": {
         "properties": {
           "access_token": {
@@ -1749,6 +1973,18 @@
         "type": "object",
         "title": "ProjectUpdate"
       },
+      "SourceType": {
+        "type": "string",
+        "enum": [
+          "user",
+          "ai",
+          "routine_engine",
+          "review",
+          "scheduler",
+          "integration"
+        ],
+        "title": "SourceType"
+      },
       "TaskCompletionEventRead": {
         "properties": {
           "id": {
@@ -2258,6 +2494,28 @@
         },
         "type": "object",
         "title": "TaskUpdate"
+      },
+      "UndoActionResponse": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/AIActionLogRead"
+          },
+          "undone": {
+            "type": "boolean",
+            "title": "Undone"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "undone",
+          "message"
+        ],
+        "title": "UndoActionResponse"
       },
       "UserProfileRead": {
         "properties": {
