@@ -20,3 +20,30 @@ Low-level design:
 - [Backend API LLD](docs/lld/02-backend-api-lld.md)
 - [AI Planning LLD](docs/lld/03-ai-planning-lld.md)
 - [Build Readiness Notes](docs/lld/04-build-readiness.md)
+
+## Repository Structure
+
+```txt
+apps/api      FastAPI backend
+apps/web      Web frontend, not scaffolded yet
+apps/android  Android app, not scaffolded yet
+docs          Product and engineering design docs
+```
+
+## Backend Quick Start
+
+The backend is set up for Python 3.11+, FastAPI, SQLAlchemy, Alembic, and Postgres.
+
+```bash
+cd apps/api
+cp .env.example .env
+uv sync
+docker compose up -d postgres
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload
+```
+
+Local health checks:
+
+- `GET /health`
+- `GET /api/v1/health`
