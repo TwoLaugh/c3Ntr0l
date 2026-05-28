@@ -1029,6 +1029,374 @@
         }
       }
     },
+    "/api/v1/routines": {
+      "get": {
+        "tags": [
+          "routines"
+        ],
+        "summary": "List Routines",
+        "operationId": "list_routines_api_v1_routines_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "include_archived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Archived"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoutineRead"
+                  },
+                  "title": "Response List Routines Api V1 Routines Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "routines"
+        ],
+        "summary": "Create Routine",
+        "operationId": "create_routine_api_v1_routines_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutineCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routines/{routine_id}": {
+      "get": {
+        "tags": [
+          "routines"
+        ],
+        "summary": "Get Routine",
+        "operationId": "get_routine_api_v1_routines__routine_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Routine Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "routines"
+        ],
+        "summary": "Update Routine",
+        "operationId": "update_routine_api_v1_routines__routine_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Routine Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutineUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routines/{routine_id}/archive": {
+      "post": {
+        "tags": [
+          "routines"
+        ],
+        "summary": "Archive Routine",
+        "operationId": "archive_routine_api_v1_routines__routine_id__archive_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Routine Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routines/{routine_id}/instances": {
+      "get": {
+        "tags": [
+          "routines"
+        ],
+        "summary": "List Routine Instances",
+        "operationId": "list_routine_instances_api_v1_routines__routine_id__instances_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Routine Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoutineInstanceRead"
+                  },
+                  "title": "Response List Routine Instances Api V1 Routines  Routine Id  Instances Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/routines/{routine_id}/instances/generate": {
+      "post": {
+        "tags": [
+          "routines"
+        ],
+        "summary": "Generate Instances",
+        "operationId": "generate_instances_api_v1_routines__routine_id__instances_generate_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "routine_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Routine Id"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "End Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutineGenerateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/ai-actions": {
       "get": {
         "tags": [
@@ -1972,6 +2340,371 @@
         },
         "type": "object",
         "title": "ProjectUpdate"
+      },
+      "RoutineCreate": {
+        "properties": {
+          "domain_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain Id"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "recurrence_rule": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Recurrence Rule"
+          },
+          "preferred_time_window": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Preferred Time Window"
+          },
+          "effort_estimate_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effort Estimate Minutes"
+          },
+          "energy_required": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EnergyLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "recurrence_rule"
+        ],
+        "title": "RoutineCreate"
+      },
+      "RoutineGenerateResponse": {
+        "properties": {
+          "instances": {
+            "items": {
+              "$ref": "#/components/schemas/RoutineInstanceRead"
+            },
+            "type": "array",
+            "title": "Instances"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instances"
+        ],
+        "title": "RoutineGenerateResponse"
+      },
+      "RoutineInstanceRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "routine_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Routine Id"
+          },
+          "task_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Task Id"
+          },
+          "scheduled_for_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Scheduled For Date"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "task": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "routine_id",
+          "task_id",
+          "scheduled_for_date",
+          "generated_at"
+        ],
+        "title": "RoutineInstanceRead"
+      },
+      "RoutineRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "domain_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "recurrence_rule": {
+            "type": "string",
+            "title": "Recurrence Rule"
+          },
+          "preferred_time_window": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Preferred Time Window"
+          },
+          "effort_estimate_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effort Estimate Minutes"
+          },
+          "energy_required": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EnergyLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "archived_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archived At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "recurrence_rule",
+          "preferred_time_window",
+          "active",
+          "metadata",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RoutineRead"
+      },
+      "RoutineUpdate": {
+        "properties": {
+          "domain_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain Id"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 240,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "recurrence_rule": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recurrence Rule"
+          },
+          "preferred_time_window": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preferred Time Window"
+          },
+          "effort_estimate_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effort Estimate Minutes"
+          },
+          "energy_required": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EnergyLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "title": "RoutineUpdate"
       },
       "SourceType": {
         "type": "string",
