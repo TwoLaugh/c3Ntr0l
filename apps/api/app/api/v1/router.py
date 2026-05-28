@@ -3,11 +3,13 @@ from fastapi import APIRouter
 from app.api.v1.routes import (
     ai_actions,
     auth,
+    categories,
     context_sections,
     domains,
     entries,
     health,
     inbox,
+    items,
     profile,
     projects,
     reviews,
@@ -22,6 +24,8 @@ api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(profile.router, prefix="/profile", tags=["profile"])
 api_router.include_router(entries.router, prefix="/entries", tags=["entries"])
 api_router.include_router(context_sections.router, prefix="/context-sections", tags=["context-sections"])
+api_router.include_router(categories.router, prefix="/categories", tags=["categories"])
+api_router.include_router(items.router, prefix="/items", tags=["items"])
 api_router.include_router(domains.router, prefix="/domains", tags=["domains"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
 api_router.include_router(tasks.router, prefix="/tasks", tags=["tasks"])

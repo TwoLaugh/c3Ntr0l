@@ -115,3 +115,45 @@ class AIChangeLevel(str, Enum):
     silent = "silent"
     report = "report"
     confirm = "confirm"
+
+
+class CategoryStatus(str, Enum):
+    active = "active"
+    archived = "archived"
+
+
+class ItemType(str, Enum):
+    action = "action"
+    reminder = "reminder"
+    routine = "routine"
+    milestone = "milestone"
+    note = "note"
+    recurring_action = "recurring_action"
+
+
+class ItemStatus(str, Enum):
+    active = "active"
+    completed = "completed"
+    archived = "archived"
+
+
+class ItemPriority(str, Enum):
+    low = "low"
+    normal = "normal"
+    high = "high"
+    urgent = "urgent"
+
+
+class RecurrenceStatus(str, Enum):
+    active = "active"
+    paused = "paused"
+    archived = "archived"
+
+
+class ItemEventType(str, Enum):
+    complete = "complete"
+    partial = "partial"
+    skipped = "skipped"
+    moved = "moved"
+    abandoned = "abandoned"
+    reopened = "reopened"
