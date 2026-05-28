@@ -39,7 +39,7 @@ def test_inbox_unsupported_input_is_stored(db_client: TestClient, auth_headers: 
     response = db_client.post(
         "/api/v1/inbox/messages",
         headers=auth_headers,
-        json={"raw_text": "Need to think about driving test"},
+        json={"raw_text": "Think about driving test"},
     )
 
     assert response.status_code == 201

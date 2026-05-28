@@ -45,7 +45,7 @@ def submit_review(
             db,
             settings=settings,
             user=current_user,
-            review_date=review_date.isoformat(),
+            review_date=review_date,
             responses=payload.responses,
         )
     review = submit_daily_review(db, user=current_user, review_date=review_date, payload=payload, interpretation=interpretation)

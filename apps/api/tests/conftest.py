@@ -67,11 +67,13 @@ def db_client(db_session: Session) -> Generator[TestClient, None, None]:
 
 @pytest.fixture()
 def test_settings() -> Settings:
-    return Settings(
+    settings = Settings(
         GOOGLE_CLIENT_ID="test-google-client-id",
         SESSION_SECRET_KEY="test-session-secret",
         DATABASE_URL=os.getenv("TEST_DATABASE_URL") or "postgresql+psycopg://postgres:postgres@localhost:5432/c3ntr0l",
     )
+    settings.openai_api_key = None
+    return settings
 
 
 @pytest.fixture(autouse=True)

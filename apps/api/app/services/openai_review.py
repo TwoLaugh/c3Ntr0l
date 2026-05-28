@@ -1,3 +1,5 @@
+from datetime import date
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from openai import OpenAI
@@ -13,7 +15,7 @@ def interpret_review_with_openai(
     *,
     settings: Settings,
     user: User,
-    review_date: str,
+    review_date: date,
     responses: dict,
 ) -> ReviewInterpretation:
     if not settings.openai_api_key:
@@ -33,7 +35,7 @@ def interpret_review_with_openai(
     return response.output_parsed
 
 
-def _context(db: Session, user: User, review_date: str, responses: dict) -> str:
+def _context(db: Session, user: User, review_date: date, responses: dict) -> str:
     profile = db.get(UserProfile, user.id)
     plan = db.scalar(select(DailyPlan).where(DailyPlan.user_id == user.id, DailyPlan.plan_date == review_date))
     items = []
