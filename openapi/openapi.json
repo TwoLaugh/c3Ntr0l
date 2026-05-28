@@ -1397,6 +1397,174 @@
         }
       }
     },
+    "/api/v1/today": {
+      "get": {
+        "tags": [
+          "today"
+        ],
+        "summary": "Get Today",
+        "operationId": "get_today_api_v1_today_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plan Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyPlanRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/today/regenerate": {
+      "post": {
+        "tags": [
+          "today"
+        ],
+        "summary": "Regenerate Today",
+        "operationId": "regenerate_today_api_v1_today_regenerate_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Plan Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyPlanRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/today/items/{item_id}": {
+      "patch": {
+        "tags": [
+          "today"
+        ],
+        "summary": "Update Today Item",
+        "operationId": "update_today_item_api_v1_today_items__item_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TodayItemUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyPlanItemRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/ai-actions": {
       "get": {
         "tags": [
@@ -1694,6 +1862,203 @@
           "abandoned"
         ],
         "title": "CompletionEventType"
+      },
+      "DailyPlanItemRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "title_snapshot": {
+            "type": "string",
+            "title": "Title Snapshot"
+          },
+          "suggested_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Start"
+          },
+          "suggested_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested End"
+          },
+          "do_window_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Do Window Start"
+          },
+          "do_window_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Do Window End"
+          },
+          "block_type": {
+            "$ref": "#/components/schemas/PlanBlockType"
+          },
+          "position": {
+            "type": "integer",
+            "title": "Position"
+          },
+          "is_fixed_time": {
+            "type": "boolean",
+            "title": "Is Fixed Time"
+          },
+          "is_optional": {
+            "type": "boolean",
+            "title": "Is Optional"
+          },
+          "reason_selected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Selected"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PlanItemStatus"
+          },
+          "user_edited_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Edited At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title_snapshot",
+          "block_type",
+          "position",
+          "is_fixed_time",
+          "is_optional",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DailyPlanItemRead"
+      },
+      "DailyPlanRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "plan_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Plan Date"
+          },
+          "default_view_mode": {
+            "type": "string",
+            "title": "Default View Mode"
+          },
+          "capacity_snapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Capacity Snapshot"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PlanStatus"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DailyPlanItemRead"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "plan_date",
+          "default_view_mode",
+          "capacity_snapshot",
+          "status",
+          "generated_at",
+          "items"
+        ],
+        "title": "DailyPlanRead"
       },
       "DomainCreate": {
         "properties": {
@@ -2069,6 +2434,41 @@
           "user"
         ],
         "title": "MeResponse"
+      },
+      "PlanBlockType": {
+        "type": "string",
+        "enum": [
+          "fixed",
+          "suggested",
+          "routine",
+          "floating",
+          "buffer"
+        ],
+        "title": "PlanBlockType"
+      },
+      "PlanItemStatus": {
+        "type": "string",
+        "enum": [
+          "planned",
+          "in_progress",
+          "completed",
+          "partial",
+          "skipped",
+          "moved",
+          "archived"
+        ],
+        "title": "PlanItemStatus"
+      },
+      "PlanStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "active",
+          "accepted",
+          "superseded",
+          "archived"
+        ],
+        "title": "PlanStatus"
       },
       "ProjectCreate": {
         "properties": {
@@ -3227,6 +3627,104 @@
         },
         "type": "object",
         "title": "TaskUpdate"
+      },
+      "TodayItemUpdate": {
+        "properties": {
+          "suggested_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Start"
+          },
+          "suggested_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested End"
+          },
+          "do_window_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Do Window Start"
+          },
+          "do_window_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Do Window End"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
+          },
+          "is_fixed_time": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Fixed Time"
+          },
+          "is_optional": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Optional"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanItemStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "TodayItemUpdate"
       },
       "UndoActionResponse": {
         "properties": {
