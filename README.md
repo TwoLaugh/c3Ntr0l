@@ -35,15 +35,24 @@ docs          Product and engineering design docs
 The backend is set up for Python 3.11+, FastAPI, SQLAlchemy, Alembic, and Postgres.
 
 ```bash
-cd apps/api
-cp .env.example .env
-uv sync
-docker compose up -d postgres
-uv run alembic upgrade head
-uv run uvicorn app.main:app --reload
+cp apps/api/.env.example apps/api/.env
+make api-install
+make db-up
+make api-migrate
+make api-dev
 ```
 
 Local health checks:
 
 - `GET /health`
 - `GET /api/v1/health`
+
+Detailed setup instructions live in [Developer Setup](docs/dev-setup.md).
+
+Useful root commands:
+
+```bash
+make help
+make api-check
+make api-openapi
+```
