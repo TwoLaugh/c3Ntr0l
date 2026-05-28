@@ -1,7 +1,7 @@
 API_DIR := apps/api
 COMPOSE := docker compose
 
-.PHONY: help api-install api-install-frozen api-lock db-up db-down db-logs api-migrate api-dev api-test api-lint api-format api-check ci-api api-openapi api-openapi-check
+.PHONY: help api-install api-install-frozen api-lock db-up db-down db-logs api-migrate api-dev api-test api-lint api-format api-check ci-api api-openapi api-openapi-check web-install web-dev web-build web-typecheck
 
 help:
 	@echo "c3Ntr0l developer commands"
@@ -22,6 +22,11 @@ help:
 	@echo "  make api-openapi   Export FastAPI OpenAPI JSON"
 	@echo "  make api-openapi-check"
 	@echo "                      Check committed OpenAPI JSON is current"
+	@echo "Web:"
+	@echo "  make web-install   Install web dependencies"
+	@echo "  make web-dev       Start Next.js dev server"
+	@echo "  make web-build     Build the web app"
+	@echo "  make web-typecheck Type-check the web app"
 
 api-install:
 	cd $(API_DIR) && uv sync --extra dev
@@ -65,3 +70,15 @@ api-openapi:
 
 api-openapi-check:
 	cd $(API_DIR) && uv run python scripts/export_openapi.py ../../openapi/openapi.json --check
+
+web-install:
+	cd apps/web && npm.cmd install
+
+web-dev:
+	cd apps/web && npm.cmd run dev
+
+web-build:
+	cd apps/web && npm.cmd run build
+
+web-typecheck:
+	cd apps/web && npm.cmd run typecheck

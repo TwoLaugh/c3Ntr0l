@@ -12,11 +12,12 @@ venv/
 .env.*
 !.env.example
 
-# Node / web app later
+# Node / web app
 node_modules/
 .next/
 dist/
 build/
+tsconfig.tsbuildinfo
 
 # Android later
 .gradle/
