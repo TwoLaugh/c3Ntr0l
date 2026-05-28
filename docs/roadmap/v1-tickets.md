@@ -10,6 +10,70 @@
 
 Estimates assume one developer working carefully, with some unknowns around auth, deployment, and AI behavior. They are planning estimates, not promises.
 
+## Roll-Up Estimate
+
+Using the scale above, the full V1 backlog is roughly:
+
+```txt
+Backend foundation through AI inbox/review: 45-69 dev days
+Web usable V1 including deployment:        65-104 dev days
+Full V1 including Android companion:       74-120 dev days
+```
+
+Calendar, weather, message filtering, Android launcher behavior, notification filtering, billing, teams, and public product hardening are not included in this V1 estimate.
+
+The most likely path to a personally usable first version is:
+
+```txt
+Backend core + planner + web Today/Inbox/Review: 57-92 dev days
+Add deployment:                              61-98 dev days
+Add Android companion:                       74-120 dev days
+```
+
+These numbers include feature tests at the ticket level, but do not include a large separate QA cycle. If the goal is a product-quality public beta, add another 15-30% for polish, bug fixing, observability, onboarding refinement, and edge-case hardening.
+
+## V1 Usability Definition
+
+For this roadmap, V1 is considered usable when:
+
+- A user can log in with Google.
+- A user can create/edit domains, projects, tasks, and routines.
+- Routines generate task instances.
+- The backend can generate weekly and daily plans.
+- Today can be used as a timeline or list.
+- The user can complete, partially complete, skip, and move tasks.
+- Daily review can adapt future planning.
+- Inbox can accept natural-language input and create/update planning state.
+- AI actions are logged and inspectable.
+- The web app supports Today, Inbox, Weekly Planning Review, Daily Review, and basic admin editing.
+- The system is deployed and usable outside local development.
+- Android companion supports Today, Inbox, completion actions, and daily review.
+
+The web app can become personally useful before Android exists. Android is part of the broader V1 companion experience, but not required for the first web-usable milestone.
+
+## Testing Bar
+
+Every implementation ticket should include tests unless explicitly marked otherwise.
+
+Minimum backend testing expectations:
+
+- Unit tests for service logic.
+- API tests for each endpoint success path.
+- API tests for validation errors.
+- User ownership/isolation tests for all user-owned resources.
+- Database tests for migrations and important constraints.
+- Mocked AI tests for OpenAI-dependent behavior.
+- Regression tests for planner/review edge cases.
+
+Minimum frontend testing expectations:
+
+- Component tests for important UI states where practical.
+- API client tests or mocked integration tests for core flows.
+- End-to-end tests for login shell, Today, Inbox, and Daily Review once the web app exists.
+- Visual/manual QA notes for timeline layout until screenshot testing is introduced.
+
+No ticket should be treated as done if the happy path works but user isolation, validation, or state-transition behavior is untested.
+
 ## Phase 0: Project Foundation
 
 ### T01: Local Developer Environment And Tooling
