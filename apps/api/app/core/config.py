@@ -1,6 +1,7 @@
 from functools import lru_cache
 from typing import Optional
 
+from pydantic import AliasChoices
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -16,6 +17,11 @@ class Settings(BaseSettings):
     google_client_id: Optional[str] = Field(default=None, alias="GOOGLE_CLIENT_ID")
     openai_api_key: Optional[str] = Field(default=None, alias="OPENAI_API_KEY")
     openai_model: str = Field(default="gpt-5-mini", alias="OPENAI_MODEL")
+    allow_dev_auth: bool = Field(default=True, alias="ALLOW_DEV_AUTH")
+    cors_origins: list[str] = Field(
+        default=["http://127.0.0.1:3000", "http://localhost:3000"],
+        validation_alias=AliasChoices("CORS_ORIGINS", "cors_origins"),
+    )
     session_secret_key: str = Field(default="local-dev-session-secret", alias="SESSION_SECRET_KEY")
     session_token_ttl_seconds: int = Field(default=60 * 60 * 24 * 30, alias="SESSION_TOKEN_TTL_SECONDS")
 

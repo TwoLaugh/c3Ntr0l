@@ -48,3 +48,15 @@ def test_me_returns_authenticated_user(db_client: TestClient, auth_headers: dict
     assert response.status_code == 200
     assert response.json()["authenticated"] is True
     assert response.json()["user"]["id"] == str(user.id)
+
+
+def test_dev_login_creates_local_user(db_client: TestClient, db_session: Session) -> None:
+    response = db_client.post("/api/v1/auth/dev")
+
+    assert response.status_code == 200
+    assert response.json()["access_token"]
+
+    user = db_session.scalar(select(User).where(User.auth_provider == "dev", User.auth_subject == "local-dev-user"))
+    assert user is not None
+    assert db_session.get(UserProfile, user.id) is not None
+    assert db_session.get(LearnedCapabilityProfile, user.id) is not None

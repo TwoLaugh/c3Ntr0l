@@ -58,6 +58,27 @@ def get_or_create_google_user(db: Session, claims: dict[str, Any]) -> User:
     return user
 
 
+def get_or_create_dev_user(db: Session) -> User:
+    user = db.scalar(select(User).where(User.auth_provider == "dev", User.auth_subject == "local-dev-user"))
+    if user is None:
+        user = User(
+            email="dev@example.com",
+            display_name="Local Dev",
+            auth_provider="dev",
+            auth_subject="local-dev-user",
+        )
+        db.add(user)
+        db.flush()
+        db.add(UserProfile(user_id=user.id))
+        db.add(LearnedCapabilityProfile(user_id=user.id))
+    else:
+        ensure_profile_rows(db, user.id)
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
 def ensure_profile_rows(db: Session, user_id: uuid.UUID) -> None:
     if db.get(UserProfile, user_id) is None:
         db.add(UserProfile(user_id=user_id))
