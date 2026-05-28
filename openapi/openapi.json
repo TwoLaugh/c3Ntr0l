@@ -190,6 +190,526 @@
         ]
       }
     },
+    "/api/v1/entries": {
+      "get": {
+        "tags": [
+          "entries"
+        ],
+        "summary": "List Entries",
+        "operationId": "list_entries_api_v1_entries_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EntrySource"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Type"
+            }
+          },
+          {
+            "name": "include_archived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Archived"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EntryRead"
+                  },
+                  "title": "Response List Entries Api V1 Entries Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "entries"
+        ],
+        "summary": "Create Entry",
+        "operationId": "create_entry_api_v1_entries_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/entries/{entry_id}": {
+      "get": {
+        "tags": [
+          "entries"
+        ],
+        "summary": "Get Entry",
+        "operationId": "get_entry_api_v1_entries__entry_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/context-sections": {
+      "get": {
+        "tags": [
+          "context-sections"
+        ],
+        "summary": "List Context Sections",
+        "operationId": "list_context_sections_api_v1_context_sections_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "include_archived",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Archived"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContextSectionRead"
+                  },
+                  "title": "Response List Context Sections Api V1 Context Sections Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "context-sections"
+        ],
+        "summary": "Create Context Section",
+        "operationId": "create_context_section_api_v1_context_sections_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContextSectionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextSectionRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/context-sections/{section_id}": {
+      "get": {
+        "tags": [
+          "context-sections"
+        ],
+        "summary": "Get Context Section",
+        "operationId": "get_context_section_api_v1_context_sections__section_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "section_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Section Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextSectionRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "context-sections"
+        ],
+        "summary": "Update Context Section",
+        "operationId": "update_context_section_api_v1_context_sections__section_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "section_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Section Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContextSectionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextSectionRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/context-sections/{section_id}/revisions": {
+      "get": {
+        "tags": [
+          "context-sections"
+        ],
+        "summary": "List Context Section Revisions",
+        "operationId": "list_context_section_revisions_api_v1_context_sections__section_id__revisions_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "section_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Section Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContextSectionRevisionRead"
+                  },
+                  "title": "Response List Context Section Revisions Api V1 Context Sections  Section Id  Revisions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/context-sections/{section_id}/evidence": {
+      "get": {
+        "tags": [
+          "context-sections"
+        ],
+        "summary": "List Context Evidence",
+        "operationId": "list_context_evidence_api_v1_context_sections__section_id__evidence_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "section_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Section Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContextEvidenceLinkRead"
+                  },
+                  "title": "Response List Context Evidence Api V1 Context Sections  Section Id  Evidence Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "context-sections"
+        ],
+        "summary": "Create Context Evidence",
+        "operationId": "create_context_evidence_api_v1_context_sections__section_id__evidence_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "section_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Section Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContextEvidenceLinkCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextEvidenceLinkRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/domains": {
       "get": {
         "tags": [
@@ -2631,6 +3151,15 @@
         ],
         "title": "AIActionLogRead"
       },
+      "AIChangeLevel": {
+        "type": "string",
+        "enum": [
+          "silent",
+          "report",
+          "confirm"
+        ],
+        "title": "AIChangeLevel"
+      },
       "AuthResponse": {
         "properties": {
           "access_token": {
@@ -2663,6 +3192,563 @@
           "abandoned"
         ],
         "title": "CompletionEventType"
+      },
+      "ConfidenceLevel": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "ConfidenceLevel"
+      },
+      "ContextEvidenceLinkCreate": {
+        "properties": {
+          "entry_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Entry Id"
+          },
+          "context_section_revision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Section Revision Id"
+          },
+          "relevance": {
+            "$ref": "#/components/schemas/ConfidenceLevel",
+            "default": "medium"
+          },
+          "evidence_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entry_id"
+        ],
+        "title": "ContextEvidenceLinkCreate"
+      },
+      "ContextEvidenceLinkRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "context_section_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Context Section Id"
+          },
+          "context_section_revision_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Section Revision Id"
+          },
+          "entry_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Entry Id"
+          },
+          "relevance": {
+            "$ref": "#/components/schemas/ConfidenceLevel"
+          },
+          "evidence_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "context_section_id",
+          "entry_id",
+          "relevance",
+          "created_at"
+        ],
+        "title": "ContextEvidenceLinkRead"
+      },
+      "ContextRevisionSource": {
+        "type": "string",
+        "enum": [
+          "ai",
+          "user",
+          "system"
+        ],
+        "title": "ContextRevisionSource"
+      },
+      "ContextSectionCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "section_type": {
+            "$ref": "#/components/schemas/ContextSectionType",
+            "default": "custom"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body",
+            "default": ""
+          },
+          "structured_facts": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Structured Facts"
+          },
+          "confidence_level": {
+            "$ref": "#/components/schemas/ConfidenceLevel",
+            "default": "low"
+          },
+          "confidence_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Notes"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/ContextRevisionSource",
+            "default": "user"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "change_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Reason"
+          },
+          "change_level": {
+            "$ref": "#/components/schemas/AIChangeLevel",
+            "default": "report"
+          },
+          "evidence_entry_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Evidence Entry Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "ContextSectionCreate"
+      },
+      "ContextSectionRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "section_type": {
+            "$ref": "#/components/schemas/ContextSectionType"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "structured_facts": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Structured Facts"
+          },
+          "confidence_level": {
+            "$ref": "#/components/schemas/ConfidenceLevel"
+          },
+          "confidence_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Notes"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ContextStatus"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/ContextRevisionSource"
+          },
+          "updated_by": {
+            "$ref": "#/components/schemas/ContextRevisionSource"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "archived_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archived At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "section_type",
+          "body",
+          "structured_facts",
+          "confidence_level",
+          "status",
+          "created_by",
+          "updated_by",
+          "metadata",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ContextSectionRead"
+      },
+      "ContextSectionRevisionRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "context_section_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Context Section Id"
+          },
+          "revision_number": {
+            "type": "integer",
+            "title": "Revision Number"
+          },
+          "title_snapshot": {
+            "type": "string",
+            "title": "Title Snapshot"
+          },
+          "summary_snapshot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary Snapshot"
+          },
+          "body_snapshot": {
+            "type": "string",
+            "title": "Body Snapshot"
+          },
+          "structured_facts_snapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Structured Facts Snapshot"
+          },
+          "confidence_level_snapshot": {
+            "$ref": "#/components/schemas/ConfidenceLevel"
+          },
+          "confidence_notes_snapshot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Notes Snapshot"
+          },
+          "change_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Reason"
+          },
+          "changed_by": {
+            "$ref": "#/components/schemas/ContextRevisionSource"
+          },
+          "change_level": {
+            "$ref": "#/components/schemas/AIChangeLevel"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "context_section_id",
+          "revision_number",
+          "title_snapshot",
+          "body_snapshot",
+          "structured_facts_snapshot",
+          "confidence_level_snapshot",
+          "changed_by",
+          "change_level",
+          "created_at"
+        ],
+        "title": "ContextSectionRevisionRead"
+      },
+      "ContextSectionType": {
+        "type": "string",
+        "enum": [
+          "general",
+          "health",
+          "person",
+          "category",
+          "planning_preference",
+          "capacity",
+          "work",
+          "home",
+          "relationship",
+          "meaning",
+          "custom"
+        ],
+        "title": "ContextSectionType"
+      },
+      "ContextSectionUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 240,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "section_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContextSectionType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "structured_facts": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Structured Facts"
+          },
+          "confidence_level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConfidenceLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confidence_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Notes"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContextStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_by": {
+            "$ref": "#/components/schemas/ContextRevisionSource",
+            "default": "user"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "change_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Reason"
+          },
+          "change_level": {
+            "$ref": "#/components/schemas/AIChangeLevel",
+            "default": "report"
+          },
+          "evidence_entry_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Evidence Entry Ids"
+          }
+        },
+        "type": "object",
+        "title": "ContextSectionUpdate"
+      },
+      "ContextStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "archived"
+        ],
+        "title": "ContextStatus"
       },
       "DailyPlanItemRead": {
         "properties": {
@@ -3307,6 +4393,173 @@
           "high"
         ],
         "title": "EnergyLevel"
+      },
+      "EntryActor": {
+        "type": "string",
+        "enum": [
+          "user",
+          "ai",
+          "system",
+          "integration"
+        ],
+        "title": "EntryActor"
+      },
+      "EntryCreate": {
+        "properties": {
+          "source_type": {
+            "$ref": "#/components/schemas/EntrySource"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "actor": {
+            "$ref": "#/components/schemas/EntryActor",
+            "default": "user"
+          },
+          "raw_text": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Raw Text"
+          },
+          "occurred_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "ai_interpretation": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Interpretation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_type",
+          "raw_text"
+        ],
+        "title": "EntryCreate"
+      },
+      "EntryRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/EntrySource"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "actor": {
+            "$ref": "#/components/schemas/EntryActor"
+          },
+          "raw_text": {
+            "type": "string",
+            "title": "Raw Text"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "ai_interpretation": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ai Interpretation"
+          },
+          "archived_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archived At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_type",
+          "actor",
+          "raw_text",
+          "occurred_at",
+          "metadata",
+          "created_at"
+        ],
+        "title": "EntryRead"
+      },
+      "EntrySource": {
+        "type": "string",
+        "enum": [
+          "inbox",
+          "onboarding",
+          "daily_review",
+          "weekly_review",
+          "completion_note",
+          "manual_admin",
+          "integration"
+        ],
+        "title": "EntrySource"
       },
       "GoogleAuthRequest": {
         "properties": {

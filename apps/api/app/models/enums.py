@@ -61,3 +61,57 @@ class SourceType(str, Enum):
     review = "review"
     scheduler = "scheduler"
     integration = "integration"
+
+
+class EntrySource(str, Enum):
+    inbox = "inbox"
+    onboarding = "onboarding"
+    daily_review = "daily_review"
+    weekly_review = "weekly_review"
+    completion_note = "completion_note"
+    manual_admin = "manual_admin"
+    integration = "integration"
+
+
+class EntryActor(str, Enum):
+    user = "user"
+    ai = "ai"
+    system = "system"
+    integration = "integration"
+
+
+class ContextSectionType(str, Enum):
+    general = "general"
+    health = "health"
+    person = "person"
+    category = "category"
+    planning_preference = "planning_preference"
+    capacity = "capacity"
+    work = "work"
+    home = "home"
+    relationship = "relationship"
+    meaning = "meaning"
+    custom = "custom"
+
+
+class ContextStatus(str, Enum):
+    active = "active"
+    archived = "archived"
+
+
+class ContextRevisionSource(str, Enum):
+    ai = "ai"
+    user = "user"
+    system = "system"
+
+
+class ConfidenceLevel(str, Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
+
+
+class AIChangeLevel(str, Enum):
+    silent = "silent"
+    report = "report"
+    confirm = "confirm"
