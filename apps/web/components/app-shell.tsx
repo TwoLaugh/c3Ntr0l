@@ -3,14 +3,29 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Activity, CalendarDays, ClipboardList, Inbox, ListChecks, Settings, Sparkles } from "lucide-react";
+import {
+  Activity,
+  CalendarDays,
+  ClipboardCheck,
+  ClipboardList,
+  FolderKanban,
+  Inbox,
+  ListChecks,
+  Repeat,
+  Settings,
+  Sparkles,
+} from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 
 const navItems = [
   { href: "/today", label: "Today", icon: CalendarDays },
   { href: "/inbox", label: "Inbox", icon: Inbox },
   { href: "/weekly-review", label: "Week", icon: ClipboardList },
+  { href: "/daily-review", label: "Review", icon: ClipboardCheck },
+  { href: "/tasks", label: "Tasks", icon: ListChecks },
   { href: "/domains", label: "Domains", icon: ListChecks },
+  { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/routines", label: "Routines", icon: Repeat },
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/ai-activity", label: "AI", icon: Activity },
 ];

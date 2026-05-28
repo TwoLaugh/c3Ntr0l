@@ -47,14 +47,135 @@ export type TodayPlan = {
   plan_date: string;
   default_view_mode: "timeline" | "list";
   capacity_snapshot: Record<string, unknown>;
+  summary: string | null;
+  status: string;
+  generated_at: string;
   items: Array<{
     id: string;
     task_id: string | null;
     title_snapshot: string;
     suggested_start: string | null;
     suggested_end: string | null;
+    do_window_start: string | null;
+    do_window_end: string | null;
     block_type: string;
+    position: number;
+    is_fixed_time: boolean;
+    is_optional: boolean;
     status: string;
     reason_selected: string | null;
   }>;
+};
+
+export type Domain = {
+  id: string;
+  name: string;
+  description: string | null;
+  weight: string | number;
+  active: boolean;
+  project_count: number;
+};
+
+export type Project = {
+  id: string;
+  domain_id: string | null;
+  title: string;
+  desired_outcome: string | null;
+  status: string;
+  deadline: string | null;
+  notes: string | null;
+};
+
+export type Task = {
+  id: string;
+  domain_id: string | null;
+  project_id: string | null;
+  title: string;
+  notes: string | null;
+  status: string;
+  priority: string;
+  due_at: string | null;
+  do_window_start: string | null;
+  do_window_end: string | null;
+  effort_estimate_minutes: number | null;
+  energy_required: string | null;
+};
+
+export type Routine = {
+  id: string;
+  domain_id: string | null;
+  title: string;
+  notes: string | null;
+  recurrence_rule: string;
+  preferred_time_window: Record<string, unknown>;
+  effort_estimate_minutes: number | null;
+  energy_required: string | null;
+  active: boolean;
+};
+
+export type DailyReviewPrompt = {
+  review_date: string;
+  prompts: Array<{
+    plan_item_id: string;
+    task_id: string | null;
+    title: string;
+    prompt_type: string;
+    question: string;
+    importance_score: number;
+  }>;
+  quick_checks: string[];
+};
+
+export type WeeklyPlan = {
+  id: string;
+  week_start_date: string;
+  generated_at: string;
+  summary: string | null;
+  focus_notes: string | null;
+  capacity_snapshot: Record<string, unknown>;
+  status: string;
+  accepted_at: string | null;
+  daily_plans: TodayPlan[];
+};
+
+export type AIAction = {
+  id: string;
+  source_type: string;
+  source_id: string | null;
+  action_type: string;
+  target_type: string;
+  target_id: string | null;
+  before_state: Record<string, unknown> | null;
+  after_state: Record<string, unknown> | null;
+  reason: string | null;
+  reversible: boolean;
+  created_at: string;
+};
+
+export type UserProfile = {
+  timezone: string;
+  default_tone: "terse" | "warm" | "direct";
+  preferred_day_view: "timeline" | "list";
+  wake_time: string | null;
+  sleep_time: string | null;
+  work_hours: Record<string, unknown>;
+  planning_style: string | null;
+  review_style: string | null;
+  ai_change_visibility: "quiet" | "digest" | "prompt";
+};
+
+export type LearnedCapabilityProfile = {
+  weekday_focus_minutes_typical: number | null;
+  weekend_focus_minutes_typical: number | null;
+  weekday_maintenance_minutes_typical: number | null;
+  weekend_maintenance_minutes_typical: number | null;
+  morning_reliability: number | null;
+  afternoon_reliability: number | null;
+  evening_reliability: number | null;
+  plan_completion_rate_14d: number | null;
+  plan_completion_rate_30d: number | null;
+  routine_completion_rate_14d: number | null;
+  overload_sensitivity: number | null;
+  confidence_score: number;
+  updated_at: string;
 };
