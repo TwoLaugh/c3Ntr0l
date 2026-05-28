@@ -80,6 +80,8 @@ def _select_tasks_for_day(db: Session, *, user_id: UUID, plan_date: date, capaci
         window_end_date = task.do_window_end.date() if task.do_window_end else None
         if scheduled_for_date == plan_date.isoformat():
             routine_tasks.append(task)
+        elif scheduled_for_date:
+            continue
         elif due_date and due_date <= plan_date:
             candidate_tasks.append(task)
         elif window_start_date and window_end_date and window_start_date <= plan_date <= window_end_date:
