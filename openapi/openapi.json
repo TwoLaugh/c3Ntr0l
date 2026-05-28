@@ -2071,6 +2071,54 @@
         }
       }
     },
+    "/api/v1/reviews/daily/{review_date}/prompt": {
+      "get": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Get Daily Review Prompt",
+        "operationId": "get_daily_review_prompt_api_v1_reviews_daily__review_date__prompt_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "review_date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Review Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyReviewPromptRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/ai-actions": {
       "get": {
         "tags": [
@@ -2565,6 +2613,82 @@
           "items"
         ],
         "title": "DailyPlanRead"
+      },
+      "DailyReviewPromptItem": {
+        "properties": {
+          "plan_item_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Plan Item Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "prompt_type": {
+            "type": "string",
+            "title": "Prompt Type"
+          },
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "importance_score": {
+            "type": "integer",
+            "title": "Importance Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan_item_id",
+          "title",
+          "prompt_type",
+          "question",
+          "importance_score"
+        ],
+        "title": "DailyReviewPromptItem"
+      },
+      "DailyReviewPromptRead": {
+        "properties": {
+          "review_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Review Date"
+          },
+          "prompts": {
+            "items": {
+              "$ref": "#/components/schemas/DailyReviewPromptItem"
+            },
+            "type": "array",
+            "title": "Prompts"
+          },
+          "quick_checks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Quick Checks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "review_date",
+          "prompts",
+          "quick_checks"
+        ],
+        "title": "DailyReviewPromptRead"
       },
       "DomainCreate": {
         "properties": {
