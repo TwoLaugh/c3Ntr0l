@@ -31,6 +31,8 @@ winget install Docker.DockerDesktop
 winget install GnuWin32.Make
 ```
 
+See [Local Machine Checklist](local-machine-checklist.md) for the broader install list, including Git, GitHub CLI, Node, and later Android tooling.
+
 Then open a new terminal and rerun the prerequisite checks.
 
 If `make` is unavailable, you can run the equivalent commands manually:
@@ -53,6 +55,7 @@ From the repository root:
 
 ```bash
 cp apps/api/.env.example apps/api/.env
+make api-lock
 make api-install
 make db-up
 make api-migrate
@@ -177,7 +180,7 @@ Run backend lint:
 make api-lint
 ```
 
-The first test harness is created in acceleration ticket `A02`. Until then, these commands define the expected interface and may fail if dependencies or tests are not installed yet.
+The smoke-test harness exists and covers the current health/auth/profile placeholder routes. Database-backed tests are deferred until `TEST_DATABASE_URL` and the A03 Postgres CI path are in place.
 
 ## Troubleshooting
 
