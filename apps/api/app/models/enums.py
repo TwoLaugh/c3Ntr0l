@@ -157,3 +157,17 @@ class ItemEventType(str, Enum):
     moved = "moved"
     abandoned = "abandoned"
     reopened = "reopened"
+
+
+class ProposedChangeType(str, Enum):
+    insert_item_today = "insert_item_today"
+    move_today_item = "move_today_item"
+    defer_today_item = "defer_today_item"
+    regenerate_today = "regenerate_today"
+
+
+class ProposedChangeStatus(str, Enum):
+    pending = "pending"
+    accepted = "accepted"
+    rejected = "rejected"
+    expired = "expired"

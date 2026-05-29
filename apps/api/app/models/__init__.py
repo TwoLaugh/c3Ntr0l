@@ -9,6 +9,7 @@ from app.models.entry import Entry
 from app.models.inbox_message import InboxMessage
 from app.models.item import Item, ItemCategoryLink, ItemCompletionEvent, ItemContextLink, ItemRecurrence
 from app.models.project import Project
+from app.models.proposed_change import ProposedChange
 from app.models.routine import Routine, RoutineInstance
 from app.models.task import Task, TaskCompletionEvent
 from app.models.user import LearnedCapabilityProfile, User, UserProfile
@@ -34,6 +35,7 @@ __all__ = [
     "ItemRecurrence",
     "LearnedCapabilityProfile",
     "Project",
+    "ProposedChange",
     "Routine",
     "RoutineInstance",
     "Task",

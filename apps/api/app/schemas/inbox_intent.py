@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from app.models.enums import EnergyLevel, ItemType, TaskPriority
 
 
-IntentType = Literal["create_task", "create_routine", "create_item", "clarification", "no_op"]
+IntentType = Literal["create_task", "create_routine", "create_item", "propose_plan_change", "clarification", "no_op"]
 
 
 class InboxIntent(BaseModel):
@@ -23,6 +23,8 @@ class InboxIntent(BaseModel):
     item_type: ItemType | None = None
     flags: list[str] = []
     primary_category_name: str | None = None
+    proposed_change_type: str | None = None
+    proposed_change_payload: dict = Field(default_factory=dict)
     clarification_question: str | None = None
     existing_task_id: str | None = None
     existing_item_id: str | None = None

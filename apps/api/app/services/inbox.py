@@ -7,9 +7,10 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.models.category import Category
 from app.models.entry import Entry
-from app.models.enums import CategoryStatus, EntrySource, ItemPriority, ItemType, SourceType
+from app.models.enums import CategoryStatus, EntrySource, ItemPriority, ItemType, ProposedChangeType, SourceType
 from app.models.inbox_message import InboxMessage
 from app.models.item import Item, ItemRecurrence
+from app.models.proposed_change import ProposedChange
 from app.models.routine import Routine
 from app.models.task import Task
 from app.models.user import User
@@ -231,6 +232,47 @@ def _apply_ai_parse_result(
                     target_type="routine",
                     target_id=routine.id,
                     message=f"Created routine: {routine.title}",
+                )
+            )
+        elif intent.intent_type == "propose_plan_change" and intent.title and intent.proposed_change_type:
+            try:
+                change_type = ProposedChangeType(intent.proposed_change_type)
+            except ValueError:
+                actions.append(
+                    InboxActionRead(
+                        action_type="clarification",
+                        message="I can propose that change, but I need a supported plan-change type.",
+                    )
+                )
+                continue
+            change = ProposedChange(
+                user_id=user_id,
+                source_type=SourceType.ai,
+                source_id=entry.id,
+                change_type=change_type,
+                title=intent.title,
+                rationale=intent.notes,
+                payload=intent.proposed_change_payload,
+            )
+            db.add(change)
+            db.flush()
+            log_action(
+                db,
+                user_id=user_id,
+                source_type=SourceType.ai,
+                source_id=entry.id,
+                action_type="propose_plan_change",
+                target_type="proposed_change",
+                target_id=change.id,
+                after_state={"id": change.id, "change_type": change.change_type, "payload": change.payload},
+                reason=intent.notes,
+            )
+            actions.append(
+                InboxActionRead(
+                    action_type="propose_plan_change",
+                    target_type="proposed_change",
+                    target_id=change.id,
+                    message=f"Proposed change: {change.title}",
                 )
             )
         elif intent.intent_type == "no_op":

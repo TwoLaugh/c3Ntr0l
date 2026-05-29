@@ -190,3 +190,44 @@ def test_ai_inbox_parse_can_avoid_duplicate_item(
     assert response.json()["actions"][0]["action_type"] == "no_op"
     assert response.json()["actions"][0]["target_type"] == "item"
     assert response.json()["actions"][0]["target_id"] == existing["id"]
+
+
+def test_ai_inbox_parse_can_propose_plan_change(
+    db_client: TestClient,
+    auth_headers: dict[str, str],
+    test_settings: Settings,
+) -> None:
+    test_settings.openai_api_key = "test-openai-key"
+    item = db_client.post("/api/v1/items", headers=auth_headers, json={"title": "Fix urgent auth issue"}).json()
+    parsed = InboxParseResult(
+        confirmation="I can add it to today.",
+        intents=[
+            InboxIntent(
+                intent_type="propose_plan_change",
+                title="Add urgent auth issue to today",
+                notes="This changes today's plan, so it needs confirmation.",
+                proposed_change_type="insert_item_today",
+                proposed_change_payload={
+                    "item_id": item["id"],
+                    "plan_date": "2026-06-01",
+                    "suggested_start": "2026-06-01T15:00:00Z",
+                    "suggested_end": "2026-06-01T15:45:00Z",
+                },
+            )
+        ],
+    )
+
+    with patch("app.services.inbox.parse_inbox_with_openai", return_value=parsed):
+        response = db_client.post(
+            "/api/v1/inbox/messages",
+            headers=auth_headers,
+            json={"raw_text": "Can you add the urgent auth issue to today?"},
+        )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["processing_status"] == "processed"
+    assert body["actions"][0]["action_type"] == "propose_plan_change"
+    proposal = db_client.get(f"/api/v1/proposed-changes/{body['actions'][0]['target_id']}", headers=auth_headers).json()
+    assert proposal["status"] == "pending"
+    assert proposal["payload"]["item_id"] == item["id"]
