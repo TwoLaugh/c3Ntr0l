@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useState } from "react";
 import {
   Activity,
   CalendarDays,
+  Check,
   ClipboardCheck,
   ClipboardList,
   FolderKanban,
@@ -20,7 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
-import { apiRequest } from "@/lib/api";
+import { apiRequest, ProposedChange, ProposedChangeDecision } from "@/lib/api";
 
 const navItems = [
   { href: "/today", label: "Today", icon: CalendarDays },
@@ -45,7 +46,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [rawText, setRawText] = useState("");
   const [assistantMessage, setAssistantMessage] = useState<string | null>(null);
   const [assistantError, setAssistantError] = useState<string | null>(null);
+  const [pendingProposal, setPendingProposal] = useState<ProposedChange | null>(null);
   const [sending, setSending] = useState(false);
+  const [deciding, setDeciding] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -63,23 +66,48 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setSending(true);
     setAssistantError(null);
     setAssistantMessage(null);
+    setPendingProposal(null);
     try {
       const response = await apiRequest<{
         confirmation: string | null;
         processing_status: string;
-        actions: Array<{ message?: string | null; action_type: string }>;
+        actions: Array<{ message?: string | null; action_type: string; target_type?: string | null; target_id?: string | null }>;
       }>("/api/v1/inbox/messages", {
         method: "POST",
         token,
         body: JSON.stringify({ raw_text: rawText }),
       });
       setAssistantMessage(response.confirmation ?? response.actions[0]?.message ?? response.processing_status);
+      const proposalAction = response.actions.find((action) => action.target_type === "proposed_change" && action.target_id);
+      if (proposalAction?.target_id) {
+        const proposal = await apiRequest<ProposedChange>(`/api/v1/proposed-changes/${proposalAction.target_id}`, { token });
+        setPendingProposal(proposal);
+      }
       setRawText("");
       if (pathname === "/today") router.refresh();
     } catch {
       setAssistantError("Inbox request failed.");
     } finally {
       setSending(false);
+    }
+  }
+
+  async function decideProposal(decision: "accept" | "reject") {
+    if (!token || !pendingProposal) return;
+    setDeciding(true);
+    setAssistantError(null);
+    try {
+      const response = await apiRequest<ProposedChangeDecision>(`/api/v1/proposed-changes/${pendingProposal.id}/${decision}`, {
+        method: "POST",
+        token,
+      });
+      setPendingProposal(response.proposed_change);
+      setAssistantMessage(response.message);
+      if (pathname === "/today") router.refresh();
+    } catch {
+      setAssistantError("Could not update the proposed change.");
+    } finally {
+      setDeciding(false);
     }
   }
 
@@ -147,6 +175,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </button>
             </form>
             {assistantMessage ? <div className="notice">{assistantMessage}</div> : null}
+            {pendingProposal ? (
+              <div className="proposal-card">
+                <div>
+                  <strong>{pendingProposal.title}</strong>
+                  {pendingProposal.rationale ? <p>{pendingProposal.rationale}</p> : null}
+                  <span className={`badge ${pendingProposal.status}`}>{pendingProposal.status}</span>
+                </div>
+                {pendingProposal.status === "pending" ? (
+                  <div className="button-row">
+                    <button className="primary-button icon-button-text" disabled={deciding} onClick={() => decideProposal("accept")} type="button">
+                      <Check size={16} aria-hidden />
+                      Accept
+                    </button>
+                    <button className="secondary-button" disabled={deciding} onClick={() => decideProposal("reject")} type="button">
+                      Reject
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             {assistantError ? <div className="notice">{assistantError}</div> : null}
           </div>
         </div>

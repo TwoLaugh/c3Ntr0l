@@ -532,6 +532,39 @@ button:disabled {
   min-height: 150px;
 }
 
+.proposal-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0b0f12;
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.proposal-card p {
+  margin: 6px 0 10px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.badge.pending {
+  border-color: var(--warn);
+  background: #2f2115;
+  color: var(--warn);
+}
+
+.badge.accepted {
+  border-color: var(--accent-soft);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.badge.rejected {
+  border-color: #5c3030;
+  background: #2f1515;
+  color: var(--danger);
+}
+
 @media (max-width: 760px) {
   .workspace {
     padding: 18px;

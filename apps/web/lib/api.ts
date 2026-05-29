@@ -53,6 +53,7 @@ export type TodayPlan = {
   items: Array<{
     id: string;
     task_id: string | null;
+    item_id: string | null;
     title_snapshot: string;
     suggested_start: string | null;
     suggested_end: string | null;
@@ -65,6 +66,27 @@ export type TodayPlan = {
     status: string;
     reason_selected: string | null;
   }>;
+};
+
+export type ProposedChange = {
+  id: string;
+  source_type: string;
+  source_id: string | null;
+  change_type: string;
+  status: "pending" | "accepted" | "rejected" | "expired";
+  title: string;
+  rationale: string | null;
+  payload: Record<string, unknown>;
+  result: Record<string, unknown> | null;
+  decided_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProposedChangeDecision = {
+  proposed_change: ProposedChange;
+  plan_item: TodayPlan["items"][number] | null;
+  message: string;
 };
 
 export type Domain = {
