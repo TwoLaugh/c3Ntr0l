@@ -37,18 +37,23 @@ def test_inbox_daily_routine_command_creates_routine(db_client: TestClient, auth
     assert routine.json()["recurrence_rule"] == "FREQ=DAILY"
 
 
-def test_inbox_unsupported_input_is_stored(db_client: TestClient, auth_headers: dict[str, str]) -> None:
+def test_inbox_unstructured_input_is_stored_and_distilled(db_client: TestClient, auth_headers: dict[str, str]) -> None:
     response = db_client.post(
         "/api/v1/inbox/messages",
         headers=auth_headers,
-        json={"raw_text": "Think about driving test"},
+        json={"raw_text": "My back hurts after skipping rehab."},
     )
 
     assert response.status_code == 201
-    assert response.json()["processing_status"] == "unsupported"
+    body = response.json()
+    assert body["processing_status"] == "processed"
+    assert body["actions"][0]["action_type"] == "update_context"
+    assert body["actions"][0]["target_type"] == "context_section"
 
     messages = db_client.get("/api/v1/inbox/messages", headers=auth_headers)
     assert len(messages.json()) == 1
+    sections = db_client.get("/api/v1/context-sections", headers=auth_headers).json()
+    assert sections[0]["title"] == "Health"
 
 
 def test_inbox_ownership_is_enforced(db_client: TestClient, auth_headers: dict[str, str]) -> None:

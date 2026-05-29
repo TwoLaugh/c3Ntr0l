@@ -1,17 +1,22 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
-from app.models.enums import EntrySource, SourceType
+from app.models.category import Category
+from app.models.entry import Entry
+from app.models.enums import CategoryStatus, EntrySource, ItemPriority, ItemType, SourceType
 from app.models.inbox_message import InboxMessage
+from app.models.item import Item, ItemRecurrence
 from app.models.routine import Routine
 from app.models.task import Task
 from app.models.user import User
 from app.schemas.inbox import InboxActionRead
 from app.schemas.inbox_intent import InboxParseResult
 from app.services.ai_actions import log_action
+from app.services.context_distillation import distill_entry_to_context
 from app.services.daily_plans import regenerate_daily_plan
 from app.services.entries import create_entry
 from app.services.openai_inbox import parse_inbox_with_openai
@@ -83,20 +88,17 @@ def process_inbox_message(db: Session, *, settings: Settings, user: User, messag
             parse_result = parse_inbox_with_openai(db, settings=settings, user=user, raw_text=text)
             actions = _apply_ai_parse_result(
                 db,
+                settings=settings,
+                user=user,
                 user_id=user_id,
                 message=message,
-                source_entry_id=entry.id,
+                entry=entry,
                 parse_result=parse_result,
             )
         else:
-            message.processing_status = "unsupported"
-            message.parsed_intents = {"command": "unsupported"}
-            actions.append(
-                InboxActionRead(
-                    action_type="unsupported",
-                    message="I stored that, but deterministic parsing does not support it yet.",
-                )
-            )
+            actions = _distill_entry_actions(db, settings=settings, user=user, entry=entry)
+            message.processing_status = "processed" if actions else "unsupported"
+            message.parsed_intents = {"command": "context_distillation"}
 
     message.processed_at = datetime.now(UTC)
     _refresh_today_after_inbox(db, user_id=user_id, actions=actions)
@@ -106,9 +108,11 @@ def process_inbox_message(db: Session, *, settings: Settings, user: User, messag
 def _apply_ai_parse_result(
     db: Session,
     *,
+    settings: Settings,
+    user: User,
     user_id: UUID,
     message: InboxMessage,
-    source_entry_id: UUID,
+    entry: Entry,
     parse_result: InboxParseResult,
 ) -> list[InboxActionRead]:
     if parse_result.clarification_question:
@@ -137,7 +141,7 @@ def _apply_ai_parse_result(
                 db,
                 user_id=user_id,
                 source_type=SourceType.ai,
-                source_id=source_entry_id,
+                source_id=entry.id,
                 action_type="create_task",
                 target_type="task",
                 target_id=task.id,
@@ -150,6 +154,53 @@ def _apply_ai_parse_result(
                     target_type="task",
                     target_id=task.id,
                     message=f"Created task: {task.title}",
+                )
+            )
+        elif intent.intent_type == "create_item" and intent.title:
+            category = _find_or_create_category(db, user_id=user_id, source_entry_id=entry.id, name=intent.primary_category_name)
+            item_type = intent.item_type or (ItemType.recurring_action if intent.recurrence_rule else ItemType.action)
+            item = Item(
+                user_id=user_id,
+                primary_category_id=category.id if category else None,
+                source_entry_id=entry.id,
+                title=intent.title,
+                notes=intent.notes,
+                item_type=item_type,
+                priority=ItemPriority(intent.priority.value),
+                flags=intent.flags,
+                due_at=intent.due_at,
+                do_window_start=intent.do_window_start,
+                do_window_end=intent.do_window_end,
+                effort_estimate_minutes=intent.effort_estimate_minutes,
+                energy_required=intent.energy_required,
+            )
+            db.add(item)
+            db.flush()
+            if intent.recurrence_rule:
+                db.add(
+                    ItemRecurrence(
+                        user_id=user_id,
+                        item_id=item.id,
+                        recurrence_rule=intent.recurrence_rule,
+                    )
+                )
+            log_action(
+                db,
+                user_id=user_id,
+                source_type=SourceType.ai,
+                source_id=entry.id,
+                action_type="create_item",
+                target_type="item",
+                target_id=item.id,
+                after_state={"id": item.id, "title": item.title, "primary_category_id": item.primary_category_id},
+                reason="Created from AI inbox parse",
+            )
+            actions.append(
+                InboxActionRead(
+                    action_type="create_item",
+                    target_type="item",
+                    target_id=item.id,
+                    message=f"Created item: {item.title}",
                 )
             )
         elif intent.intent_type == "create_routine" and intent.title and intent.recurrence_rule:
@@ -167,7 +218,7 @@ def _apply_ai_parse_result(
                 db,
                 user_id=user_id,
                 source_type=SourceType.ai,
-                source_id=source_entry_id,
+                source_id=entry.id,
                 action_type="create_routine",
                 target_type="routine",
                 target_id=routine.id,
@@ -186,8 +237,10 @@ def _apply_ai_parse_result(
             actions.append(
                 InboxActionRead(
                     action_type="no_op",
-                    target_type="task" if intent.existing_task_id else None,
-                    target_id=UUID(intent.existing_task_id) if intent.existing_task_id else None,
+                    target_type="item" if intent.existing_item_id else "task" if intent.existing_task_id else None,
+                    target_id=UUID(intent.existing_item_id or intent.existing_task_id)
+                    if intent.existing_item_id or intent.existing_task_id
+                    else None,
                     message=intent.no_op_reason or "Already covered.",
                 )
             )
@@ -195,8 +248,54 @@ def _apply_ai_parse_result(
     message.processing_status = "processed" if actions else "unsupported"
     message.parsed_intents = parse_result.model_dump(mode="json")
     if not actions:
-        actions.append(InboxActionRead(action_type="unsupported", message="I stored that, but could not apply it safely."))
+        actions = _distill_entry_actions(db, settings=settings, user=user, entry=entry)
+        message.processing_status = "processed" if actions else "unsupported"
+        if not actions:
+            actions.append(InboxActionRead(action_type="unsupported", message="I stored that, but could not apply it safely."))
     return actions
+
+
+def _distill_entry_actions(db: Session, *, settings: Settings, user: User, entry: Entry) -> list[InboxActionRead]:
+    message, sections = distill_entry_to_context(db, settings=settings, user=user, entry=entry)
+    return [
+        InboxActionRead(
+            action_type="update_context",
+            target_type="context_section",
+            target_id=section.id,
+            message=message or f"Updated context: {section.title}",
+        )
+        for section in sections
+    ]
+
+
+def _find_or_create_category(db: Session, *, user_id: UUID, source_entry_id: UUID, name: str | None) -> Category | None:
+    if not name:
+        return None
+    category = db.scalar(
+        select(Category).where(
+            Category.user_id == user_id,
+            Category.name == name,
+            Category.status == CategoryStatus.active,
+        )
+    )
+    if category is not None:
+        return category
+
+    category = Category(user_id=user_id, name=name)
+    db.add(category)
+    db.flush()
+    log_action(
+        db,
+        user_id=user_id,
+        source_type=SourceType.ai,
+        source_id=source_entry_id,
+        action_type="create_category",
+        target_type="category",
+        target_id=category.id,
+        after_state={"id": category.id, "name": category.name},
+        reason="Created as the primary category for an inbox item",
+    )
+    return category
 
 
 def _refresh_today_after_inbox(db: Session, *, user_id: UUID, actions: list[InboxActionRead]) -> None:

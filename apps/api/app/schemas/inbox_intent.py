@@ -3,10 +3,10 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from app.models.enums import EnergyLevel, TaskPriority
+from app.models.enums import EnergyLevel, ItemType, TaskPriority
 
 
-IntentType = Literal["create_task", "create_routine", "clarification", "no_op"]
+IntentType = Literal["create_task", "create_routine", "create_item", "clarification", "no_op"]
 
 
 class InboxIntent(BaseModel):
@@ -20,8 +20,12 @@ class InboxIntent(BaseModel):
     effort_estimate_minutes: int | None = Field(default=None, ge=1)
     energy_required: EnergyLevel | None = None
     recurrence_rule: str | None = None
+    item_type: ItemType | None = None
+    flags: list[str] = []
+    primary_category_name: str | None = None
     clarification_question: str | None = None
     existing_task_id: str | None = None
+    existing_item_id: str | None = None
     no_op_reason: str | None = None
 
 

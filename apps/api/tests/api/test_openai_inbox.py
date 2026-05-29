@@ -68,6 +68,51 @@ def test_ai_inbox_parse_can_create_routine(
     assert any(item["title_snapshot"] == "Back rehab" and item["block_type"] == "routine" for item in today["items"])
 
 
+def test_ai_inbox_parse_can_create_context_led_item(
+    db_client: TestClient,
+    auth_headers: dict[str, str],
+    test_settings: Settings,
+) -> None:
+    test_settings.openai_api_key = "test-openai-key"
+    parsed = InboxParseResult(
+        confirmation="Added to House.",
+        intents=[
+            InboxIntent(
+                intent_type="create_item",
+                title="Pressure wash paths",
+                primary_category_name="House",
+                flags=["home"],
+                priority="high",
+                effort_estimate_minutes=90,
+            )
+        ],
+    )
+
+    with patch("app.services.inbox.parse_inbox_with_openai", return_value=parsed):
+        response = db_client.post(
+            "/api/v1/inbox/messages",
+            headers=auth_headers,
+            json={"raw_text": "Need to pressure wash paths this weekend"},
+        )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["processing_status"] == "processed"
+    assert body["actions"][0]["action_type"] == "create_item"
+
+    item = db_client.get(f"/api/v1/items/{body['actions'][0]['target_id']}", headers=auth_headers).json()
+    assert item["title"] == "Pressure wash paths"
+    assert item["priority"] == "high"
+    assert item["flags"] == ["home"]
+
+    categories = db_client.get("/api/v1/categories", headers=auth_headers).json()
+    assert categories[0]["name"] == "House"
+    assert item["primary_category_id"] == categories[0]["id"]
+
+    actions = db_client.get("/api/v1/ai-actions", headers=auth_headers).json()
+    assert {action["action_type"] for action in actions[:2]} == {"create_item", "create_category"}
+
+
 def test_ai_inbox_parse_returns_clarification(
     db_client: TestClient,
     auth_headers: dict[str, str],
@@ -112,4 +157,36 @@ def test_ai_inbox_parse_can_avoid_duplicate_task(
     assert response.status_code == 201
     assert response.json()["processing_status"] == "processed"
     assert response.json()["actions"][0]["action_type"] == "no_op"
+    assert response.json()["actions"][0]["target_id"] == existing["id"]
+
+
+def test_ai_inbox_parse_can_avoid_duplicate_item(
+    db_client: TestClient,
+    auth_headers: dict[str, str],
+    test_settings: Settings,
+) -> None:
+    test_settings.openai_api_key = "test-openai-key"
+    existing = db_client.post("/api/v1/items", headers=auth_headers, json={"title": "Prepare for driving test"}).json()
+    parsed = InboxParseResult(
+        confirmation="Already covered.",
+        intents=[
+            InboxIntent(
+                intent_type="no_op",
+                existing_item_id=existing["id"],
+                no_op_reason="Already have this as an active item.",
+            )
+        ],
+    )
+
+    with patch("app.services.inbox.parse_inbox_with_openai", return_value=parsed):
+        response = db_client.post(
+            "/api/v1/inbox/messages",
+            headers=auth_headers,
+            json={"raw_text": "Need to prepare for driving test"},
+        )
+
+    assert response.status_code == 201
+    assert response.json()["processing_status"] == "processed"
+    assert response.json()["actions"][0]["action_type"] == "no_op"
+    assert response.json()["actions"][0]["target_type"] == "item"
     assert response.json()["actions"][0]["target_id"] == existing["id"]
