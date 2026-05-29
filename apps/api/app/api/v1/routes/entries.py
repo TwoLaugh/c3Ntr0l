@@ -6,11 +6,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.config import Settings, get_settings
 from app.core.database import get_db
 from app.models.entry import Entry
 from app.models.enums import EntrySource
 from app.models.user import User
+from app.schemas.context_distillation import ContextDistillationResponse
 from app.schemas.entry import EntryCreate, EntryRead
+from app.services.context_distillation import distill_entry_to_context
 
 router = APIRouter()
 
@@ -50,6 +53,21 @@ def get_entry(
     db: Annotated[Session, Depends(get_db)],
 ) -> Entry:
     return _get_owned_entry(db, current_user, entry_id)
+
+
+@router.post("/{entry_id}/distill-context", response_model=ContextDistillationResponse)
+def distill_entry_context(
+    entry_id: UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> ContextDistillationResponse:
+    entry = _get_owned_entry(db, current_user, entry_id)
+    message, sections = distill_entry_to_context(db, settings=settings, user=current_user, entry=entry)
+    db.commit()
+    for section in sections:
+        db.refresh(section)
+    return ContextDistillationResponse(entry_id=entry.id, message=message, sections=sections)
 
 
 def _get_owned_entry(db: Session, current_user: User, entry_id: UUID) -> Entry:

@@ -350,6 +350,54 @@
         }
       }
     },
+    "/api/v1/entries/{entry_id}/distill-context": {
+      "post": {
+        "tags": [
+          "entries"
+        ],
+        "summary": "Distill Entry Context",
+        "operationId": "distill_entry_context_api_v1_entries__entry_id__distill_context_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextDistillationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/context-sections": {
       "get": {
         "tags": [
@@ -4190,6 +4238,39 @@
           "high"
         ],
         "title": "ConfidenceLevel"
+      },
+      "ContextDistillationResponse": {
+        "properties": {
+          "entry_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Entry Id"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/ContextSectionRead"
+            },
+            "type": "array",
+            "title": "Sections"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entry_id",
+          "sections"
+        ],
+        "title": "ContextDistillationResponse"
       },
       "ContextEvidenceLinkCreate": {
         "properties": {
