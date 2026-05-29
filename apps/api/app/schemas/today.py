@@ -9,6 +9,7 @@ from app.models.enums import PlanBlockType, PlanItemStatus, PlanStatus
 class DailyPlanItemRead(BaseModel):
     id: UUID
     task_id: UUID | None = None
+    item_id: UUID | None = None
     title_snapshot: str
     suggested_start: datetime | None = None
     suggested_end: datetime | None = None

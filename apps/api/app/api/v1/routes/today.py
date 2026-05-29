@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.daily_plan import DailyPlan, DailyPlanItem
-from app.models.enums import CompletionEventType, PlanItemStatus, TaskStatus
+from app.models.enums import CompletionEventType, ItemEventType, ItemStatus, PlanItemStatus, TaskStatus
+from app.models.item import Item, ItemCompletionEvent
 from app.models.task import Task, TaskCompletionEvent
 from app.models.user import User
 from app.schemas.today import (
@@ -89,6 +90,10 @@ def complete_today_item(
     if task is not None:
         task.status = TaskStatus.completed
         _record_event(db, current_user, item, task, CompletionEventType.complete, payload.note)
+    source_item = _get_source_item(db, item)
+    if source_item is not None:
+        source_item.status = ItemStatus.completed
+        _record_item_event(db, current_user, item, source_item, ItemEventType.complete, payload.note, None)
     db.commit()
     db.refresh(item)
     return item
@@ -109,6 +114,19 @@ def partially_complete_today_item(
         if payload.complete_task:
             task.status = TaskStatus.completed
         _record_event(db, current_user, item, task, CompletionEventType.partial, "\n".join(note_parts) or None)
+    source_item = _get_source_item(db, item)
+    if source_item is not None:
+        if payload.complete_task:
+            source_item.status = ItemStatus.completed
+        _record_item_event(
+            db,
+            current_user,
+            item,
+            source_item,
+            ItemEventType.partial,
+            payload.note,
+            payload.amount_done,
+        )
     db.commit()
     db.refresh(item)
     return item
@@ -126,6 +144,9 @@ def skip_today_item(
     task = _get_item_task(db, item)
     if task is not None:
         _record_event(db, current_user, item, task, CompletionEventType.skipped, payload.note)
+    source_item = _get_source_item(db, item)
+    if source_item is not None:
+        _record_item_event(db, current_user, item, source_item, ItemEventType.skipped, payload.note, None)
     db.commit()
     db.refresh(item)
     return item
@@ -152,6 +173,9 @@ def move_today_item(
     item.user_edited_at = datetime.now(UTC)
     if task is not None:
         _record_event(db, current_user, item, task, CompletionEventType.moved, payload.note)
+    source_item = _get_source_item(db, item)
+    if source_item is not None:
+        _record_item_event(db, current_user, item, source_item, ItemEventType.moved, payload.note, None)
     db.commit()
     db.refresh(item)
     return item
@@ -186,6 +210,12 @@ def _get_item_task(db: Session, item: DailyPlanItem) -> Task | None:
     return db.get(Task, item.task_id)
 
 
+def _get_source_item(db: Session, item: DailyPlanItem) -> Item | None:
+    if item.item_id is None:
+        return None
+    return db.get(Item, item.item_id)
+
+
 def _record_event(
     db: Session,
     current_user: User,
@@ -201,6 +231,27 @@ def _record_event(
             plan_item_id=item.id,
             event_type=event_type,
             note=note,
+        )
+    )
+
+
+def _record_item_event(
+    db: Session,
+    current_user: User,
+    plan_item: DailyPlanItem,
+    item: Item,
+    event_type: ItemEventType,
+    note: str | None,
+    amount_done: str | None,
+) -> None:
+    db.add(
+        ItemCompletionEvent(
+            user_id=current_user.id,
+            item_id=item.id,
+            plan_instance_id=plan_item.id,
+            event_type=event_type,
+            note=note,
+            amount_done=amount_done,
         )
     )
 

@@ -30,6 +30,7 @@ class DailyPlanItem(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     daily_plan_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("daily_plans.id", ondelete="CASCADE"), nullable=False)
     task_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("tasks.id", ondelete="SET NULL"))
+    item_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("items.id", ondelete="SET NULL"))
     title_snapshot: Mapped[str] = mapped_column(String, nullable=False)
     suggested_start: Mapped[object | None] = mapped_column(DateTime(timezone=True))
     suggested_end: Mapped[object | None] = mapped_column(DateTime(timezone=True))

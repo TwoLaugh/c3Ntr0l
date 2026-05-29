@@ -4839,6 +4839,18 @@
             ],
             "title": "Task Id"
           },
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Id"
+          },
           "title_snapshot": {
             "type": "string",
             "title": "Title Snapshot"

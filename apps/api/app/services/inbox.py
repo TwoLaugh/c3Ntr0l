@@ -299,7 +299,7 @@ def _find_or_create_category(db: Session, *, user_id: UUID, source_entry_id: UUI
 
 
 def _refresh_today_after_inbox(db: Session, *, user_id: UUID, actions: list[InboxActionRead]) -> None:
-    if not any(action.action_type in {"create_task", "create_routine"} for action in actions):
+    if not any(action.action_type in {"create_task", "create_routine", "create_item"} for action in actions):
         return
 
     today = datetime.now(UTC).date()
